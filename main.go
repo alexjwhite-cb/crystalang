@@ -10,7 +10,5 @@ import (
 
 func main() {
 	out, _ := lexer.Lex(strings.Join(os.Args[1:], "\n"))
-	for _, o := range out {
-		fmt.Printf("%+v\n", o)
-	}
+	fmt.Printf("%+v\n", out)
 }
