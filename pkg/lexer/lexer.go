@@ -68,7 +68,7 @@ func NewLexer() *Lexer {
 // Lex works out a list of IDs, Ops, and Nums from
 // the given source code
 func (l *Lexer) Lex(code string) (map[int]string, error) {
-	for _, r := range []rune(code) {
+	for _, r := range code {
 
 		if unicode.IsSpace(r) {
 			l.addValThenReset()

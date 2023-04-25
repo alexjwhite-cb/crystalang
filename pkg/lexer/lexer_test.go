@@ -6,6 +6,25 @@ import (
 )
 
 const (
+	entry = `meth main {
+}`
+	fail = `meth main {
+	(1)->
+}`
+	returnVar = `meth main {
+	num = 0
+	(num)->
+}`
+	returnIncrement1 = `meth main {
+	num = 0
+	num++
+	(num)->
+}`
+	returnIncrement2 = `meth main {
+	num = 0
+	num += 2
+	(num)->
+}`
 	func1 = `meth NewGuitar: tuning {
 	guitar = Guitar->new
 	tuning = tuning->toUpper
