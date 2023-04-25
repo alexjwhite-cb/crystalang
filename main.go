@@ -9,6 +9,6 @@ import (
 )
 
 func main() {
-	out, _ := lexer.Lex(strings.Join(os.Args[1:], "\n"))
+	out, _ := lexer.NewLexer().Lex(strings.Join(os.Args[1:], "\n"))
 	fmt.Printf("%+v\n", out)
 }

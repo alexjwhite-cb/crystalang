@@ -28,78 +28,112 @@ import "unicode"
 //  }
 
 const (
-	l_bracket   = '('
-	r_bracket   = ')'
-	l_sqBracket = '['
-	r_sqBracket = ']'
-	l_brace     = '{'
-	r_brace     = '}'
+	lBracket    = '('
+	rBracket    = ')'
+	lSquare     = '['
+	rSquare     = ']'
+	lBrace      = '{'
+	rBrace      = '}'
+	lArrow      = '<'
+	rArrow      = '>'
 	exclamation = '!'
 	question    = '?'
+	comma       = ','
+	stop        = '.'
 	plus        = '+'
 	hyphen      = '-'
 	multiply    = '*'
 	divide      = '/'
 	and         = '&'
 	or          = '|'
-	l_arrow     = '<'
-	r_arrow     = '>'
 	equals      = '='
 	colon       = ':'
 	quote       = '"'
 )
 
+type Lexer struct {
+	lexicon map[int]string
+	key     int
+	val     string
+}
+
+func NewLexer() *Lexer {
+	return &Lexer{
+		lexicon: make(map[int]string),
+		key:     0,
+		val:     "",
+	}
+}
+
 // Lex works out a list of IDs, Ops, and Nums from
 // the given source code
-func Lex(code string) (map[int]string, error) {
-	lexicon := make(map[int]string)
-	key := 0
-	var val string
-
+func (l *Lexer) Lex(code string) (map[int]string, error) {
 	for _, r := range []rune(code) {
 
 		if unicode.IsSpace(r) {
-			if len(val) > 0 {
-				lexicon[key] = val
-				key++
-				val = ""
-			}
+			l.addValThenReset()
 			continue
+		}
+
+		if unicode.IsSymbol(r) {
+			switch r {
+			case rArrow:
+				l.val += string(r)
+				l.addValThenReset()
+			//case lArrow:
+			//case equals:
+			//case plus:
+			default:
+				l.val += string(r)
+			}
 		}
 
 		if unicode.IsPunct(r) {
 			switch r {
-			case l_bracket:
+			case hyphen:
+				l.addValThenReset()
+				l.val += string(r)
+			case colon:
 				fallthrough
-			case r_bracket:
+			case comma:
 				fallthrough
-			case l_brace:
+			case stop:
 				fallthrough
-			case r_brace:
+			case lBracket:
 				fallthrough
-			case l_sqBracket:
+			case rBracket:
 				fallthrough
-			case r_sqBracket:
-				if len(val) > 0 {
-					lexicon[key] = val
-					key++
-					val = ""
-				}
-				lexicon[key] = string(r)
-				key++
+			case lBrace:
+				fallthrough
+			case rBrace:
+				fallthrough
+			case lSquare:
+				fallthrough
+			case rSquare:
+				l.addValThenReset()
+				l.lexicon[l.key] = string(r)
+				l.key++
 			default:
-				val += string(r)
+				l.val += string(r)
 			}
 		}
 
 		if unicode.IsNumber(r) {
-			val += string(r)
+			l.val += string(r)
 		}
 
 		if unicode.IsLetter(r) {
-			val += string(r)
+			l.val += string(r)
 		}
 	}
 
-	return lexicon, nil
+	return l.lexicon, nil
+}
+
+func (l *Lexer) addValThenReset() {
+	if len(l.val) > 0 {
+		l.lexicon[l.key] = l.val
+		l.key++
+		l.val = ""
+	}
 }

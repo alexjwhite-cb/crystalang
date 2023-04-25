@@ -1,2 +1,2 @@
-# track-lang
+# crystal-lang
 Can I write an awful esolang in Go
