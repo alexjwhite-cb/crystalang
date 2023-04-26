@@ -86,18 +86,48 @@ func (l *Lexer) Lex(code string) (map[int]string, error) {
 		// Handle arg-separating whitespace
 		if unicode.IsSpace(r) {
 			l.addValThenReset()
-			continue
 		}
 
 		// Calculate functional tokens
 		if unicode.IsSymbol(r) {
 			switch r {
 			case rArrow:
-				l.val += string(r)
+				switch len(l.val) {
+				case 1:
+					if l.val[0] == hyphen {
+						l.val += string(r)
+						l.addValThenReset()
+						continue
+					}
+				}
 				l.addValThenReset()
-			//case lArrow:
-			//case equals:
-			//case plus:
+				l.val += string(r)
+			case lArrow:
+				l.addValThenReset()
+				l.val += string(r)
+				continue
+			case plus:
+				if len(l.val) == 1 && l.val[0] == plus {
+					l.val += string(r)
+					l.addValThenReset()
+					continue
+				}
+				l.addValThenReset()
+				l.val += string(r)
+				continue
+			case equals:
+				switch len(l.val) {
+				case 1:
+					switch l.val[0] {
+					case plus, hyphen, equals, rArrow, lArrow:
+						l.val += string(r)
+						l.addValThenReset()
+						continue
+					}
+				}
+				l.addValThenReset()
+				l.val += string(r)
+				continue
 			default:
 				l.val += string(r)
 			}
@@ -107,12 +137,23 @@ func (l *Lexer) Lex(code string) (map[int]string, error) {
 		if unicode.IsPunct(r) {
 			switch r {
 			case hyphen:
+				if len(l.val) == 1 && l.val[0] == hyphen {
+					l.val += string(r)
+					l.addValThenReset()
+					continue
+				}
 				l.addValThenReset()
 				l.val += string(r)
+				continue
 			case colon, comma, stop, lBracket, rBracket, lBrace, rBrace, lSquare, rSquare:
 				l.addValThenReset()
 				l.lexicon[l.key] = string(r)
 				l.key++
+			case exclamation:
+				l.addValThenReset()
+				l.lexicon[l.key] = string(r)
+				l.key++
+				l.addValThenReset()
 			default:
 				l.val += string(r)
 			}

@@ -25,8 +25,22 @@ const (
 	num += 2
 	(num)->
 }`
+	returnDecrement1 = `meth main {
+	num = 0
+	num--
+	(num)->
+}`
+	returnDecrement2 = `meth main {
+	num = 0
+	num -= 2
+	(num)->
+}`
 	returnString = `meth main {
 	str = "Hello, World!"
+	(str)->
+}`
+	returnEscapeString = `meth main {
+	str = "\"Hello, World!\""
 	(str)->
 }`
 	func1 = `meth NewGuitar: tuning {
@@ -102,11 +116,43 @@ func TestLex(t *testing.T) {
 			},
 		},
 		{
+			name: "Decrement Var 1",
+			in:   returnDecrement1,
+			expect: map[int]string{
+				0: "meth", 1: "main", 2: "{",
+				3: "num", 4: "=", 5: "0",
+				6: "num", 7: "--",
+				8: "(", 9: "num", 10: ")", 11: "->",
+				12: "}",
+			},
+		},
+		{
+			name: "Decrement Var 2",
+			in:   returnDecrement2,
+			expect: map[int]string{
+				0: "meth", 1: "main", 2: "{",
+				3: "num", 4: "=", 5: "0",
+				6: "num", 7: "-=", 8: "2",
+				9: "(", 10: "num", 11: ")", 12: "->",
+				13: "}",
+			},
+		},
+		{
 			name: "Return String",
 			in:   returnString,
 			expect: map[int]string{
 				0: "meth", 1: "main", 2: "{",
 				3: "str", 4: "=", 5: "\"Hello, World!\"",
+				6: "(", 7: "str", 8: ")", 9: "->",
+				10: "}",
+			},
+		},
+		{
+			name: "Return EscapeString",
+			in:   returnEscapeString,
+			expect: map[int]string{
+				0: "meth", 1: "main", 2: "{",
+				3: "str", 4: "=", 5: "\"\\\"Hello, World!\\\"\"",
 				6: "(", 7: "str", 8: ")", 9: "->",
 				10: "}",
 			},
