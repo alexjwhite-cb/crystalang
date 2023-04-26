@@ -1,0 +1,46 @@
+<html>
+<style>
+pre {
+    background-color: rgb(42, 48, 58);
+    color: aliceblue;
+    padding: 50px;
+}
+span.keyword {
+	color: coral;
+	font-weight: 900;
+}
+span.func {
+    color: lightskyblue;
+    font-style: italic;
+}
+span.return {
+    color: greenyellow;
+    font-style: italic;
+}
+span.string {
+    color: yellow;
+    font-style: italic;
+}
+span.infix {
+    color: orange;
+    font-style: italic;
+}
+</style>
+
+<pre>
+<span class="keyword">meth</span> NewGuitar: tuning {
+	guitar = Guitar-><span class="func">new</span>
+	tuning = tuning-><span class="func">toUpper</span>
+	<span class="keyword">if</span> tuning-><span class="func">!inValidTunings</span> {
+		<span class="return">(error: <span class="string">"<span class="infix">{tuning}</span> is not a valid tuning"</span>)-></span>
+	}
+	<span class="keyword">for</span> i, t <span class="keyword">in</span> array {
+		if t-><span class="func">len</span> == 1 {
+			t = <span class="string">" "</span> + t
+		}
+		guitar.Tuning[i+1] = t
+	}
+	<span class="return">(guitar)-></span>
+}
+</pre>
+</html>

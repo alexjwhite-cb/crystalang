@@ -1,6 +1,8 @@
 package lexer
 
-import "unicode"
+import (
+	"unicode"
+)
 
 //
 
@@ -70,11 +72,24 @@ func NewLexer() *Lexer {
 func (l *Lexer) Lex(code string) (map[int]string, error) {
 	for _, r := range code {
 
+		// Handle strings encapsulated inside quotes
+		if len(l.val) > 0 && l.val[0] == quote {
+			if r == quote && l.val[len(l.val)-1] != '\\' {
+				l.val += string(r)
+				l.addValThenReset()
+				continue
+			}
+			l.val += string(r)
+			continue
+		}
+
+		// Handle arg-separating whitespace
 		if unicode.IsSpace(r) {
 			l.addValThenReset()
 			continue
 		}
 
+		// Calculate functional tokens
 		if unicode.IsSymbol(r) {
 			switch r {
 			case rArrow:
@@ -88,28 +103,13 @@ func (l *Lexer) Lex(code string) (map[int]string, error) {
 			}
 		}
 
+		// Calculate functional tokens
 		if unicode.IsPunct(r) {
 			switch r {
 			case hyphen:
 				l.addValThenReset()
 				l.val += string(r)
-			case colon:
-				fallthrough
-			case comma:
-				fallthrough
-			case stop:
-				fallthrough
-			case lBracket:
-				fallthrough
-			case rBracket:
-				fallthrough
-			case lBrace:
-				fallthrough
-			case rBrace:
-				fallthrough
-			case lSquare:
-				fallthrough
-			case rSquare:
+			case colon, comma, stop, lBracket, rBracket, lBrace, rBrace, lSquare, rSquare:
 				l.addValThenReset()
 				l.lexicon[l.key] = string(r)
 				l.key++
@@ -118,10 +118,12 @@ func (l *Lexer) Lex(code string) (map[int]string, error) {
 			}
 		}
 
+		// Handle numeric values
 		if unicode.IsNumber(r) {
 			l.val += string(r)
 		}
 
+		// Handle string calues
 		if unicode.IsLetter(r) {
 			l.val += string(r)
 		}

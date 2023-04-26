@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alexjwhite-cb/track-lang/lexer"
+	"github.com/alexjwhite-cb/track-lang/pkg/lexer"
 )
 
 func main() {
