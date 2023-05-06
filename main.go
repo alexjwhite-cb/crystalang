@@ -5,10 +5,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alexjwhite-cb/track-lang/pkg/lexer"
+	"github.com/alexjwhite-cb/crystalang/pkg/tokeniser"
 )
 
 func main() {
-	out, _ := lexer.NewLexer().Lex(strings.Join(os.Args[1:], "\n"))
+	out, err := tokeniser.NewTokeniser().Tokenise(strings.Join(os.Args[1:], "\n"))
+	if err != nil {
+		panic(err)
+	}
 	fmt.Printf("%+v\n", out)
 }
