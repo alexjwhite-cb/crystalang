@@ -158,9 +158,24 @@ func TestLex(t *testing.T) {
 			},
 		},
 		{
-			name:   "Simple Function",
-			in:     func1,
-			expect: map[int]string{},
+			name: "Simple Function",
+			in:   func1,
+			expect: map[int]string{
+				0: "meth", 1: "NewGuitar", 2: ":", 3: "tuning", 4: "{",
+				5: "guitar", 6: "=", 7: "Guitar", 8: "->", 9: "new",
+				10: "tuning", 11: "=", 12: "tuning", 13: "->", 14: "toUpper",
+				15: "if", 16: "tuning", 17: "->", 18: "!", 19: "inValidTunings", 20: "{",
+				21: "(", 22: "error", 23: ":", 24: "\"{tuning} is not a valid tuning\"", 25: ")", 26: "->",
+				27: "}",
+				28: "for", 29: "i", 30: ",", 31: "t", 32: "in", 33: "array", 34: "{",
+				35: "if", 36: "t", 37: "->", 38: "len", 39: "==", 40: "1", 41: "{",
+				42: "t", 43: "=", 44: "\" \"", 45: "+", 46: "t",
+				47: "}",
+				48: "guitar", 49: ".", 50: "Tuning", 51: "[", 52: "i", 53: "+", 54: "1", 55: "]", 56: "=", 57: "t",
+				58: "}",
+				59: "(", 60: "guitar", 61: ")", 62: "->",
+				63: "}",
+			},
 		},
 	}
 
