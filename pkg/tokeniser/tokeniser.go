@@ -7,6 +7,8 @@ import (
 	"unicode"
 )
 
+// Token represents the token-types available
+// during tokenisation.
 type Token string
 
 const (
@@ -26,12 +28,15 @@ const (
 	forLoop = "for"
 )
 
+// Tokeniser is a stateful struct that evolves as
+// it iterates over the characters in the script/program being imported.
 type Tokeniser struct {
 	Tokens map[int]map[Token]interface{}
 	key    int
 	val    string
 }
 
+// NewTokeniser instantiates a new Tokeniser
 func NewTokeniser() *Tokeniser {
 	return &Tokeniser{
 		Tokens: make(map[int]map[Token]interface{}),
@@ -40,8 +45,19 @@ func NewTokeniser() *Tokeniser {
 	}
 }
 
-// Tokenise works out a list of IDs, Ops, and Nums from
-// the given source code
+// Tokenise works out a token map from
+// the given source code by performing the following steps:
+//
+//  1. Identify the last character that was added to our value tracker
+//  2. If we're currently handling a string, add all characters to the value
+//     until we find an unescaped closing quote (")
+//  3. Make a decision with whitespace. Check to see if our value is a rune
+//     that could be a single-character operator. If not, determine the value's
+//     token as normal, then handle the space. If it's a new line character, store it.
+//  4. Handle symbols and punctuation
+//  5. Handle numbers and letters
+//  6. Error if we have a character we're not expecting that won't fit into any
+//     of the above patterns
 func (t *Tokeniser) Tokenise(code string) (*Tokeniser, error) {
 	for _, r := range code {
 		var previous_character rune
@@ -153,6 +169,10 @@ func (t *Tokeniser) Tokenise(code string) (*Tokeniser, error) {
 	return t, nil
 }
 
+// Adds a value to the token map. This function should
+// not be used for adding rune operators. Numbers and
+// single character variable or function names are
+// compatible.
 func (t *Tokeniser) addVal(r rune) {
 	t.Tokens[t.key] = make(map[Token]interface{})
 
@@ -179,6 +199,7 @@ func (t *Tokeniser) addVal(r rune) {
 	}
 }
 
+// Adds a single rune to the token map
 func (t *Tokeniser) addRune(r rune) {
 	t.Tokens[t.key] = make(map[Token]interface{})
 	switch {
@@ -192,6 +213,8 @@ func (t *Tokeniser) addRune(r rune) {
 	t.key++
 }
 
+// Uses ;, \n, and \r as a way of delimiting
+// statements. All are interpretted as semi-colons
 func isStatementSeparator(r rune) bool {
 	switch r {
 	case ';', '\n', '\r':
@@ -200,6 +223,8 @@ func isStatementSeparator(r rune) bool {
 	return false
 }
 
+// Checks to see if the current string value
+// is equivalent to anything in the single-character operator list.
 func (t *Tokeniser) valIsOperator() bool {
 	switch t.val {
 	case "(", ")", "[", "]", "{", "}", "<", ">", "!", "?", ",", ".", "+", "-", "*", "/", "=", ":":
@@ -208,6 +233,8 @@ func (t *Tokeniser) valIsOperator() bool {
 	return false
 }
 
+// Checks to see if the given rune is in the
+// single character operator list.
 func isSingleCharOperator(r rune) bool {
 	switch r {
 	case '(', ')', '[', ']', '{', '}', '<', '>', '!', '?', ',', '.', '+', '-', '*', '/', '=', ':':
@@ -216,6 +243,8 @@ func isSingleCharOperator(r rune) bool {
 	return false
 }
 
+// Checks to see if the given string value
+// is equivalent to anything in the multi-character operator list.
 func isMultiCharOperator(val string) bool {
 	switch val {
 	case "->", "-/-", "&&", "||":
@@ -224,6 +253,8 @@ func isMultiCharOperator(val string) bool {
 	return false
 }
 
+// Checks to see if the given string value
+// is equivalent to anything comparator/iterator list
 func isExpression(val string) bool {
 	switch val {
 	case "==", "++", "--", "+=", "-=", "<=", ">=":
@@ -232,6 +263,8 @@ func isExpression(val string) bool {
 	return false
 }
 
+// Checks to see if the given string value
+// is equivalent in the reserved word list
 func isReserved(val string) bool {
 	switch val {
 	case method, main, forLoop:
@@ -240,6 +273,8 @@ func isReserved(val string) bool {
 	return false
 }
 
+// Checks to see if the given string value
+// is equivalent to anything in the boolean list
 func isBool(val string) bool {
 	switch val {
 	case "true", "false":

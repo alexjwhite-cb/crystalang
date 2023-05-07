@@ -11,3 +11,8 @@ Crystal is a dynamically-typed interpretted object-_orchestration_ language insp
 * [ ] Attributes and child methods are accessed via `.` syntax
 * [ ] Values are piped into and out of functions with the "spoon" syntax: `()->`
 
+## Resources
+
+[High Level Principles / Tokenisation](https://www.freecodecamp.org/news/the-programming-language-pipeline-91d3f449c919/)
+
+[Abstract Syntax Trees](https://www.twilio.com/blog/abstract-syntax-trees)
