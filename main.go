@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/alexjwhite-cb/crystalang/pkg/abstracter"
 	"github.com/alexjwhite-cb/crystalang/pkg/tokeniser"
 )
 
@@ -13,5 +14,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%+v\n", out)
+	ast := abstracter.NewAbstractSyntaxTree().Abstract(out.Tokens)
+	fmt.Printf("%+v\n", ast)
 }

@@ -11,12 +11,14 @@ import (
 // during tokenisation.
 type Token string
 
+type TokenMap map[int]map[Token]interface{}
+
 const (
-	Id      Token = "id"
-	Op      Token = "op"
+	Id      Token = "identifier"
+	Op      Token = "operator"
 	Num     Token = "number"
 	Str     Token = "string"
-	Exp     Token = "exp"
+	Exp     Token = "expression"
 	Bool    Token = "bool"
 	NewLine Token = "newline"
 )
