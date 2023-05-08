@@ -183,10 +183,6 @@ func (t *Tokeniser) addVal(r rune) {
 		t.Tokens[t.key][Num] = value
 	case isMultiCharOperator(t.val):
 		t.Tokens[t.key][Op] = t.val
-	case isExpression(t.val):
-		t.Tokens[t.key][Exp] = t.val
-	case isReserved(t.val):
-		t.Tokens[t.key][Id] = t.val
 	case isBool(t.val):
 		t.Tokens[t.key][Bool] = t.val
 	case strings.HasPrefix(t.val, "\"") && strings.HasSuffix(t.val, "\""):
@@ -249,27 +245,7 @@ func isSingleCharOperator(r rune) bool {
 // is equivalent to anything in the multi-character operator list.
 func isMultiCharOperator(val string) bool {
 	switch val {
-	case "->", "-/-", "&&", "||":
-		return true
-	}
-	return false
-}
-
-// Checks to see if the given string value
-// is equivalent to anything comparator/iterator list
-func isExpression(val string) bool {
-	switch val {
-	case "==", "++", "--", "+=", "-=", "<=", ">=":
-		return true
-	}
-	return false
-}
-
-// Checks to see if the given string value
-// is equivalent in the reserved word list
-func isReserved(val string) bool {
-	switch val {
-	case method, main, forLoop:
+	case "->", "-/-", "&&", "||", "==", "++", "--", "+=", "-=", "<=", ">=":
 		return true
 	}
 	return false
