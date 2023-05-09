@@ -42,7 +42,7 @@ func NewAbstractSyntaxTree() *AbstractSyntaxTree {
 	return &AbstractSyntaxTree{}
 }
 
-func (a *AbstractSyntaxTree) Abstract(tokens tokeniser.TokenMap) *AbstractSyntaxTree {
+func (a *AbstractSyntaxTree) Abstract(tokens []tokeniser.Token) *AbstractSyntaxTree {
 	for i := 0; i < len(tokens); i++ {
 		fmt.Printf("%v, %+v\n", i, tokens[i])
 
@@ -50,8 +50,8 @@ func (a *AbstractSyntaxTree) Abstract(tokens tokeniser.TokenMap) *AbstractSyntax
 	return a
 }
 
-func inReservedValues(x map[tokeniser.Token]string) NodeFunc {
-	for t, v := range x {
-
-	}
-}
+//func inReservedValues(x map[tokeniser.Token]string) NodeFunc {
+//	for t, v := range x {
+//
+//	}
+//}

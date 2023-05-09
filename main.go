@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	out, err := tokeniser.NewTokeniser().Tokenise(strings.Join(os.Args[1:], "\n"))
+	out, err := tokeniser.NewTokenizer().Tokenize(strings.Join(os.Args[1:], "\n"))
 	if err != nil {
 		panic(err)
 	}
