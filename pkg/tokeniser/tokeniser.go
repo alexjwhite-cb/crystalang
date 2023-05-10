@@ -2,7 +2,6 @@ package tokeniser
 
 import (
 	"fmt"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"unicode"
@@ -83,6 +82,8 @@ func (t *Tokenizer) newRuneToken(tokenType string, value rune, pos int) Token {
 //     of the above patterns
 func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 	for i, r := range code {
+		// Helpful debug
+		//fmt.Printf("%v: %s\n", i, string(r))
 		var previousCharacter rune
 		if len(t.val) > 0 {
 			previousCharacter = rune(t.val[len(t.val)-1])
@@ -92,7 +93,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 		if len(t.val) > 0 && t.val[0] == '"' {
 			if r == '"' && t.val[len(t.val)-1] != '\\' {
 				t.val += string(r)
-				t.addVal(i)
+				t.addVal(i + 1)
 				continue
 			}
 			t.val += string(r)
@@ -103,7 +104,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 		// Handle arg-separating whitespace
 		case unicode.IsSpace(r):
 			if t.valIsOperator() {
-				t.addRune(rune(t.val[0]), i)
+				t.addRune(rune(t.val[0]), i-1)
 			}
 			if len(t.val) > 0 {
 				t.addVal(i)
@@ -120,7 +121,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 				case 1:
 					if previousCharacter == '-' {
 						t.val += string(r)
-						t.addVal(i)
+						t.addVal(i + 1)
 						continue
 					}
 				}
@@ -132,7 +133,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 			case '+':
 				if len(t.val) == 1 && previousCharacter == '+' {
 					t.val += string(r)
-					t.addVal(i)
+					t.addVal(i + 1)
 					continue
 				}
 				t.addVal(i)
@@ -143,7 +144,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 					switch previousCharacter {
 					case '+', '-', '=', '>', '<':
 						t.val += string(r)
-						t.addVal(i)
+						t.addVal(i + 1)
 						continue
 					}
 				}
@@ -158,7 +159,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 			case '-', '&', '|':
 				if len(t.val) == 1 && previousCharacter == r {
 					t.val += string(r)
-					t.addVal(i)
+					t.addVal(i + 1)
 					continue
 				}
 				t.addVal(i)
@@ -172,7 +173,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 
 		case unicode.IsNumber(r):
 			if t.valIsOperator() {
-				t.addRune(rune(t.val[0]), i)
+				t.addRune(rune(t.val[0]), i-1)
 			} else if len(t.val) > 0 && !unicode.IsNumber(previousCharacter) && !unicode.IsLetter(previousCharacter) {
 				t.addVal(i)
 			}
@@ -180,9 +181,10 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 
 		case unicode.IsLetter(r):
 			if t.valIsOperator() {
-				t.addRune(rune(t.val[0]), i)
+				t.addRune(rune(t.val[0]), i-1)
 			}
 			t.val += string(r)
+
 		default:
 			return t, fmt.Errorf("invalid token: %s", string(r))
 		}
@@ -210,13 +212,11 @@ func (t *Tokenizer) addVal(pos int) {
 	case strings.HasPrefix(t.val, "\"") && strings.HasSuffix(t.val, "\""):
 		t.Tokens = append(t.Tokens, t.newValueToken(Str, t.val, pos))
 	default:
-		t.Tokens = append(t.Tokens, t.newValueToken(Id, t.val, pos))
+		if len(t.val) > 0 {
+			t.Tokens = append(t.Tokens, t.newValueToken(Id, t.val, pos))
+		}
 	}
-
-	if len(t.val) > 0 {
-		t.val = ""
-	}
-	//fmt.Printf("%s", debug.Stack())
+	t.val = ""
 }
 
 // addRune adds a single rune to the token map
@@ -224,15 +224,12 @@ func (t *Tokenizer) addRune(r rune, pos int) {
 	switch {
 	case isSingleCharOperator(r):
 		t.Tokens = append(t.Tokens, t.newRuneToken(Op, r, pos))
-		fmt.Printf("%+v", t.newRuneToken(Op, r, pos))
 	case isStatementSeparator(r):
 		t.Tokens = append(t.Tokens, t.newRuneToken(NewLine, ';', pos))
-		fmt.Printf("%+v", t.newRuneToken(NewLine, ';', pos))
 		t.line++
 	}
 
 	t.val = ""
-	fmt.Printf("%s", debug.Stack())
 }
 
 // isStatementSeparator uses ;, \n, and \r as a way of delimiting
