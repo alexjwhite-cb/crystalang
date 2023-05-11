@@ -114,7 +114,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 				t.addRune(r, i)
 			}
 
-		case unicode.IsSymbol(r):
+		case unicode.IsSymbol(r), unicode.IsPunct(r):
 			switch r {
 			case '>':
 				switch len(t.val) {
@@ -130,14 +130,6 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 			case '<':
 				t.addVal(i)
 				t.val += string(r)
-			case '+':
-				if len(t.val) == 1 && previousCharacter == '+' {
-					t.val += string(r)
-					t.addVal(i + 1)
-					continue
-				}
-				t.addVal(i)
-				t.val += string(r)
 			case '=':
 				switch len(t.val) {
 				case 1:
@@ -150,13 +142,7 @@ func (t *Tokenizer) Tokenize(code string) (*Tokenizer, error) {
 				}
 				t.addVal(i)
 				t.val += string(r)
-			default:
-				t.val += string(r)
-			}
-
-		case unicode.IsPunct(r):
-			switch r {
-			case '-', '&', '|':
+			case '-', '&', '|', '+':
 				if len(t.val) == 1 && previousCharacter == r {
 					t.val += string(r)
 					t.addVal(i + 1)
