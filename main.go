@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alexjwhite-cb/crystalang/pkg/abstracter"
-	"github.com/alexjwhite-cb/crystalang/pkg/tokeniser"
+	"github.com/alexjwhite-cb/jet/pkg/abstracter"
+	"github.com/alexjwhite-cb/jet/pkg/tokeniser"
 )
 
 func main() {

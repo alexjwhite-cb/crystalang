@@ -1,3 +1,3 @@
-module github.com/alexjwhite-cb/crystalang
+module github.com/alexjwhite-cb/jet
 
 go 1.19

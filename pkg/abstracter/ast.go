@@ -3,7 +3,7 @@ package abstracter
 import (
 	"fmt"
 
-	"github.com/alexjwhite-cb/crystalang/pkg/tokeniser"
+	"github.com/alexjwhite-cb/jet/pkg/tokeniser"
 )
 
 type NodeFunc int
