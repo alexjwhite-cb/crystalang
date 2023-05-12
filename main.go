@@ -6,14 +6,14 @@ import (
 	"strings"
 
 	"github.com/alexjwhite-cb/jet/pkg/abstracter"
-	"github.com/alexjwhite-cb/jet/pkg/tokenizer"
+	"github.com/alexjwhite-cb/jet/pkg/token"
 )
 
 func main() {
-	out, err := tokenizer.NewTokenizer().Tokenize(strings.Join(os.Args[1:], "\n"))
+	out, err := token.NewTokenizer().Tokenize(strings.Join(os.Args[1:], "\n"))
 	if err != nil {
 		panic(err)
 	}
-	ast := abstracter.NewAbstractSyntaxTree().Abstract(out.Tokens)
+	ast := abstracter.Abstract(out.Tokens)
 	fmt.Printf("%+v\n", ast)
 }

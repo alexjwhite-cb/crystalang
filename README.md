@@ -12,6 +12,17 @@ Jet uses the `main` method as its default entrypoint.
 
 `.jet` is the default file extension for Jet files.
 
+### Comments
+
+### Scope
+
+A variable declared in :
+* File scope is global
+* Descriptor scope is accessible only to that Descriptor and Objects it Describes
+* Object scope is accessible only to that Object and blocks that Object has been instantiated in.
+* Function scope is isolated to code within the function
+* For/If scope is isolated to that for/if loop
+
 ### Types
 
 Jet supports the following types:

@@ -1,4 +1,4 @@
-package tokenizer
+package token
 
 import (
 	"fmt"
@@ -17,6 +17,10 @@ type Token struct {
 	Line  int
 }
 
+// Type describes the data type
+type Type string
+
+// TODO: Add ; type for statements that happen on the same line
 const (
 	Id      = "identifier"
 	Op      = "operator"

@@ -1,9 +1,12 @@
 package abstracter
 
-type Expression struct {
-	Start uint
+type ParenExpression struct {
+	Lparen Position
+	X      Expr
+	Rparen Position
 }
 
-func (e Expression) Pos() uint {
-	return e.Start
-}
+func (p *ParenExpression) Pos() int { return p.Lparen.Start }
+func (p *ParenExpression) End() int { return p.Rparen.Start }
+
+func (p *ParenExpression) exprNode() {}

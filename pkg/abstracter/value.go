@@ -1,12 +1,13 @@
 package abstracter
 
-// Represents constant and variable declarations
+// Value represents constant and variable declarations
 type Value struct {
-	Identity string
-	Value    any
-	Start    uint
 }
 
-func (v Value) Pos() uint {
+func (v *Value) Pos() uint {
+	return 0
+}
+
+func (v *Value) End() uint {
 	return 0
 }
