@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/alexjwhite-cb/jet/pkg/abstracter"
-	"github.com/alexjwhite-cb/jet/pkg/tokeniser"
+	"github.com/alexjwhite-cb/jet/pkg/tokenizer"
 )
 
 func main() {
-	out, err := tokeniser.NewTokenizer().Tokenize(strings.Join(os.Args[1:], "\n"))
+	out, err := tokenizer.NewTokenizer().Tokenize(strings.Join(os.Args[1:], "\n"))
 	if err != nil {
 		panic(err)
 	}

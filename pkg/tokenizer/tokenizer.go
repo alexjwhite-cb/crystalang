@@ -1,4 +1,4 @@
-package tokeniser
+package tokenizer
 
 import (
 	"fmt"
@@ -45,7 +45,7 @@ func NewTokenizer() *Tokenizer {
 	}
 }
 
-// newValueToken creates a new Token from the Tokenizer's values
+// newValueToken creates a new Token from Tokenizer values
 func (t *Tokenizer) newValueToken(tokenType string, value any, pos int) Token {
 	return Token{
 		Type:  tokenType,

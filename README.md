@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Jet is a dynamically-typed interpretted object-_orchestration_ language inspired by Go, PHP, and Python.
+Jet is a dynamically-typed interpreted object-_orchestration_ language inspired by Go, PHP, and Python.
 
 ## Language Features
 
@@ -45,7 +45,7 @@ As Jet is dynamically typed, maps/arrays do not care about having mixed value or
 
 ### Returning
 
-Jet does not have the return keyword, but instead uses the passthrough syntax: `->`
+Jet does not have the return keyword, but instead uses the pass through syntax: `->`
 
 Methods in Jet do not have explicit expectations in regard to return values, so numerous arguments can be returned by encapsulating them within parenthesis like so: `(x, y)->`
 
@@ -107,7 +107,7 @@ if myString == myString2 {
 
 This can be particularly powerful when using varargs as the return values of the first function (if there are multiple) will be produced as an array. One of 3 things will then occur:
 1. The number of values being passed through is identical to the number of arguments taken, and arguments will be assigned to the next methods parameters in return order.
-   1. Returned values that already are arrays will not be broken down as a passthrough.
+   1. Returned values that already are arrays will not be broken down as a pass through.
 2. The number of values being passed through is not identical to the expected number of parameters, however the last/only argument is a vararg. Values that cannot be assigned to the single value arg, will be passed to the vararg.
 3. The number of values being passed through is not identical to the expected number of parameters and a panic will occur.
 
@@ -156,13 +156,13 @@ myFighter = FighterJet(2, "Falcon", 100)
 ## Language Objectives
 
 * [ ] Jet uses a common entrypoint; `main` will always be used to initialise a program.
-* [ ] Inheritence is "shallow". Object-types can be defined and their default methods defined and implemented, however one object-type cannot inherit from another. They must be orchestrated together.
+* [ ] Inheritance is "shallow". Object-types can be defined and their default methods defined and implemented, however one object-type cannot inherit from another. They must be orchestrated together.
 * [ ] Attributes and child methods are accessed via `.` syntax
 * [ ] Values are piped into and out of functions with the "spoon" syntax: `()->`
 
 ## Resources
 
-[High Level Principles / Tokenisation](https://www.freecodecamp.org/news/the-programming-language-pipeline-91d3f449c919/)
+[High Level Principles / Tokenization](https://www.freecodecamp.org/news/the-programming-language-pipeline-91d3f449c919/)
 
 [Abstract Syntax Trees](https://www.twilio.com/blog/abstract-syntax-trees)
 

@@ -2,8 +2,6 @@ package abstracter
 
 import (
 	"fmt"
-
-	"github.com/alexjwhite-cb/jet/pkg/tokeniser"
 )
 
 type NodeFunc int
@@ -42,7 +40,7 @@ func NewAbstractSyntaxTree() *AbstractSyntaxTree {
 	return &AbstractSyntaxTree{}
 }
 
-func (a *AbstractSyntaxTree) Abstract(tokens []tokeniser.Token) *AbstractSyntaxTree {
+func (a *AbstractSyntaxTree) Abstract(tokens []tokenizer.Token) *AbstractSyntaxTree {
 	for i := 0; i < len(tokens); i++ {
 		fmt.Printf("%v, %+v\n", i, tokens[i])
 
@@ -50,7 +48,7 @@ func (a *AbstractSyntaxTree) Abstract(tokens []tokeniser.Token) *AbstractSyntaxT
 	return a
 }
 
-//func inReservedValues(x map[tokeniser.Token]string) NodeFunc {
+//func inReservedValues(x map[tokenizer.Token]string) NodeFunc {
 //	for t, v := range x {
 //
 //	}
