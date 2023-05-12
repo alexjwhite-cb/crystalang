@@ -33,7 +33,9 @@ Jet treats all arrays as maps in order to have a unified function set:
 
 ### Returning
 
-`()->`
+Jet does not have the return keyword, but instead uses the passthrough syntax: `->`
+
+Methods in Jet do not have explicit expectations in regard to return values, so numerous arguments can be returned by encapsulating them within parenthesis like so: `(x, y)->`
 
 ### Methods
 
@@ -51,9 +53,43 @@ meth myFunction: arg1, arg2 {}
 meth myFunction: arg1, arg* {}
 
 myClosure = meth: x, y { (x + y)-> }
+
+myClosure = meth {}
 ```
 
-#### 2. Passing Arguments
+#### 2. Calling Methods
+
+If a method has no parameters, parenthesis `()` can be omitted.
+```
+myMethod
+myObject.MyMethod
+myMethod(x, y)
+myObject.MyMethod()
+```
+```
+a, _ = myMethod  // Returns 
+_, b = myMethod
+c = myMethod
+```
+
+#### 3. Non-Declarative Argument Parsing
+
+Just as `->` is used to return, values can be passed directly into functions to create function chains as follows:
+```
+meth Foo: array { (a, b, c)-> }
+meth Bar: args* { (d, e)-> }
+meth Baz: arg1, arg2 { (string)-> }
+
+myString  = Foo(myArray)->Bar->Baz
+
+a, b, c   = Foo(myArray)
+d, e      = Bar(a, b, c)
+myString2 = Baz(d, e)
+
+if myString == myString2 {
+    // Evaluates to true.
+} 
+```
 
 ### Descriptors
 
@@ -93,7 +129,7 @@ object FighterJet: Vehicle, Jet {
     }
 }
 
-myFighter = (2, "Falcon", 100)->FighterJet
+myFighter = FighterJet(2, "Falcon", 100)
 3->myFighter.Wheels
 ```
 
