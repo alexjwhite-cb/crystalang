@@ -20,16 +20,28 @@ Jet supports the following types:
 * `float`
 * `boolean`
 * `string`
+* `array`
 * `map`
 
-Jet treats all arrays as maps in order to have a unified function set:
+Under the hood, arrays and maps are effectively identical. This allows for a unified set of methods for access and manipulation.
 
-* `(map, value)->add` - adds the value to the map with the lowest available int starting at `0`
-* `(map, key)->remove` - removes the specified key and associated value from the map
-* `map->unique` - returns a copy of the map with any duplicate **values** removed
-* `map->ksort` - sorts by the key in ascending order
-* `map->vsort` - sorts by the value in ascending order
-* `map->reverse` - reverses the current order
+* `(map, value)->add || add(map, value)` - adds the value to the map with the lowest available int starting at `0`
+* `(map, key)->remove || remove(map, key)` - removes the specified key and associated value from the map
+* `map->unique || unique(map)` - returns a copy of the map with any duplicate **values** removed
+
+Consider the following:
+```
+myArray = ["a", "b", "c", "d"]
+```
+
+In Jet, this is actually a map:
+```
+[0: "a", 1: "b", 2: "c", 3: "d"]
+```
+
+This allows simple declaration, predictable ordering when iterating, and the ability to dynamically change values with ease.
+
+As Jet is dynamically typed, maps/arrays do not care about having mixed value or key types.
 
 ### Returning
 
@@ -41,7 +53,9 @@ Methods in Jet do not have explicit expectations in regard to return values, so 
 
 #### 1. Declaration
 
-Methods are declared with the `meth` keyword and code blocks are defined with braces `{}`. Arguments are declared after a colon (`:`) and are comma seperated. When an unknown number of arguments are required, the `*` suffix can be used. Additional arguments will be compiled into a map and can be accessed via the argument name that precedes the `*` token. 
+Methods are declared with the `meth` keyword and code blocks are defined with braces `{}`.
+
+Arguments are declared after a colon (`:`) and are comma seperated. When an unknown number of arguments are required, the vararg suffix (`*`) can be used. Additional arguments will be compiled into a map and can be accessed via the argument name that precedes the `*` token. 
 
 Methods can be declared in any of the following formats.
 
@@ -90,6 +104,12 @@ if myString == myString2 {
     // Evaluates to true.
 } 
 ```
+
+This can be particularly powerful when using varargs as the return values of the first function (if there are multiple) will be produced as an array. One of 3 things will then occur:
+1. The number of values being passed through is identical to the number of arguments taken, and arguments will be assigned to the next methods parameters in return order.
+   1. Returned values that already are arrays will not be broken down as a passthrough.
+2. The number of values being passed through is not identical to the expected number of parameters, however the last/only argument is a vararg. Values that cannot be assigned to the single value arg, will be passed to the vararg.
+3. The number of values being passed through is not identical to the expected number of parameters and a panic will occur.
 
 ### Descriptors
 
