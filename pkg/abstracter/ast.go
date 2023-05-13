@@ -1,7 +1,6 @@
 package abstracter
 
 import (
-	"fmt"
 	"github.com/alexjwhite-cb/jet/pkg/token"
 )
 
@@ -101,6 +100,61 @@ type AbstractSyntaxTree struct {
 
 func Abstract(tokens []token.Token) *AbstractSyntaxTree {
 	// This will need to call the function that consumes main
-	fmt.Printf("%+v", tokens[0])
-	return &AbstractSyntaxTree{}
+	decl, _ := declareMethods(tokens)
+	return &AbstractSyntaxTree{
+		Declaration: decl,
+	}
 }
+
+func declareMethods(tokens []token.Token) ([]Decl, []token.Token) {
+	var remove []int
+	var methods []Decl
+	for i, t := range tokens {
+		if t.Type != token.Id {
+			continue
+		}
+		if val, ok := t.Value.(string); ok && val == keywords[Meth] {
+			lastNewLine := 0
+			for nl := i; nl >= 0; nl-- {
+				if tokens[nl].Type == token.NewLine {
+					lastNewLine = tokens[nl].Start
+				}
+			}
+			if methName, ok := tokens[i+1].Value.(string); ok {
+				methods = append(methods, &MethodDeclaration{
+					Meth: &Ident{
+						IdPos: &Position{
+							Start: t.Start,
+							End:   t.End,
+							Col:   t.Start - lastNewLine,
+							Line:  t.Line,
+						},
+						IdName: val,
+					},
+					Name: methName,
+					Loc: &Position{
+						Start: tokens[i+1].Start,
+						End:   tokens[i+1].End,
+						Col:   tokens[i+1].Start - lastNewLine,
+						Line:  tokens[i+1].Line,
+					},
+					Block: nil,
+				})
+				remove = append(remove, i, i+1)
+			}
+		}
+	}
+	return methods, removeParsed(tokens, remove)
+}
+
+func removeParsed(tokens []token.Token, ind []int) []token.Token {
+	var unparsed []token.Token
+	nextStartInd := 0
+	for i := 0; i < len(ind); i++ {
+		unparsed = append(unparsed, tokens[nextStartInd:ind[i]]...)
+		nextStartInd = i + 1
+	}
+	return unparsed
+}
+
+func NewBlockStatement(tokens []token.Token, i int) *BlockStatement { return &BlockStatement{} }

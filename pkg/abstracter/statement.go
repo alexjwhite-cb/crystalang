@@ -1,10 +1,13 @@
 package abstracter
 
-type Statement struct {
+type BlockStatement struct {
+	Lbrace   *Position
 	Identity string
-	Start    uint
+	List     []Stmt
+	RBrace   *Position
 }
 
-func (s Statement) Pos() uint {
-	return s.Start
-}
+func (b *BlockStatement) Pos() int { return b.Lbrace.Start }
+func (b *BlockStatement) End() int { return b.Lbrace.Start }
+
+func (*BlockStatement) stmtNode() {}

@@ -15,5 +15,5 @@ func main() {
 		panic(err)
 	}
 	ast := abstracter.Abstract(out.Tokens)
-	fmt.Printf("%+v\n", ast)
+	fmt.Printf("%s\n", ast.Declaration)
 }
