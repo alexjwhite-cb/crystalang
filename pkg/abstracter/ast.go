@@ -114,19 +114,14 @@ func declareMethods(tokens []token.Token) ([]Decl, []token.Token) {
 			continue
 		}
 		if val, ok := t.Value.(string); ok && val == keywords[Meth] {
-			lastNewLine := 0
-			for nl := i; nl >= 0; nl-- {
-				if tokens[nl].Type == token.NewLine {
-					lastNewLine = tokens[nl].Start
-				}
-			}
 			if methName, ok := tokens[i+1].Value.(string); ok {
+				previousLineEnd := lastNewLine(tokens, i)
 				methods = append(methods, &MethodDeclaration{
 					Meth: &Ident{
 						IdPos: &Position{
 							Start: t.Start,
 							End:   t.End,
-							Col:   t.Start - lastNewLine,
+							Col:   t.Start - previousLineEnd,
 							Line:  t.Line,
 						},
 						IdName: val,
@@ -135,7 +130,7 @@ func declareMethods(tokens []token.Token) ([]Decl, []token.Token) {
 					Loc: &Position{
 						Start: tokens[i+1].Start,
 						End:   tokens[i+1].End,
-						Col:   tokens[i+1].Start - lastNewLine,
+						Col:   tokens[i+1].Start - previousLineEnd,
 						Line:  tokens[i+1].Line,
 					},
 					Block: nil,
@@ -155,6 +150,15 @@ func removeParsed(tokens []token.Token, ind []int) []token.Token {
 		nextStartInd = i + 1
 	}
 	return unparsed
+}
+
+func lastNewLine(tokens []token.Token, currentToken int) int {
+	for nl := currentToken; nl >= 0; nl-- {
+		if tokens[nl].Type == token.NewLine {
+			return tokens[nl].Start
+		}
+	}
+	return 0
 }
 
 func NewBlockStatement(tokens []token.Token, i int) *BlockStatement { return &BlockStatement{} }
