@@ -2,18 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexjwhite-cb/jet/pkg/repl"
 	"os"
-	"strings"
-
-	"github.com/alexjwhite-cb/jet/pkg/abstracter"
-	"github.com/alexjwhite-cb/jet/pkg/token"
 )
 
 func main() {
-	out, err := token.NewTokenizer().Tokenize(strings.Join(os.Args[1:], "\n"))
-	if err != nil {
-		panic(err)
-	}
-	ast := abstracter.Abstract(out.Tokens)
-	fmt.Printf("%s\n", ast.Declaration)
+	fmt.Printf("Welcome to the Jet programming language!\n")
+	repl.Start(os.Stdin, os.Stdout)
 }
