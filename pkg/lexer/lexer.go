@@ -74,8 +74,6 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.SEMICOLON, l.char, l.position, l.line)
 	case ':':
 		tok = newToken(token.COLON, l.char, l.position, l.line)
-	case '!':
-		tok = newToken(token.NOT, l.char, l.position, l.line)
 	case '?':
 		tok = newToken(token.QUESTION, l.char, l.position, l.line)
 	case '*':
@@ -174,7 +172,7 @@ func (l *Lexer) readString() string {
 // is equivalent to anything in the single-character operator list.
 func (l *Lexer) isOperator() bool {
 	switch l.char {
-	case '+', '-', '=', '<', '>', '|', '&':
+	case '+', '-', '=', '<', '>', '|', '&', '!':
 		return true
 	}
 	return false

@@ -85,6 +85,7 @@ var operators = map[string]TokenType{
 	"-=": MINUSASSIGN,
 	"+=": PLUSASSIGN,
 	"==": EQUAL,
+	"!":  NOT,
 	"!=": NOTEQUAL,
 	"->": PASSTHROUGH,
 	"<":  LESSTHAN,
@@ -105,6 +106,7 @@ type Token struct {
 	Line int
 }
 
+// LookupIdent checks if an identity is a reserved word
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
@@ -112,6 +114,7 @@ func LookupIdent(ident string) TokenType {
 	return IDENT
 }
 
+// LookupOperator checks if a string of operators is valid
 func LookupOperator(op string) TokenType {
 	if tok, ok := operators[op]; ok {
 		return tok

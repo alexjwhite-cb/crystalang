@@ -62,7 +62,7 @@ const (
 	func1 = `meth NewGuitar: tuning {
 	guitar = Guitar->new
 	tuning = tuning->toUpper
-	if tuning->!inValidTunings {
+	if !inValidTunings(tuning) {
 		(error: "{tuning} is not a valid tuning")->
 	}
 	for i, t in array {
@@ -315,10 +315,11 @@ func TestLexer_NextToken(t *testing.T) {
 				{token.PASSTHROUGH, "->", 63, 3},
 				{token.IDENT, "toUpper", 65, 3},
 				{token.IF, "if", 74, 4},
-				{token.IDENT, "tuning", 77, 4},
-				{token.PASSTHROUGH, "->", 83, 4},
-				{token.NOT, "!", 85, 4},
-				{token.IDENT, "inValidTunings", 86, 4},
+				{token.NOT, "!", 77, 4},
+				{token.IDENT, "inValidTunings", 78, 4},
+				{token.LPAREN, "(", 92, 4},
+				{token.IDENT, "tuning", 93, 4},
+				{token.RPAREN, ")", 99, 4},
 				{token.LBRACE, "{", 101, 4},
 				{token.LPAREN, "(", 105, 5},
 				{token.ERROR, "error", 106, 5},
