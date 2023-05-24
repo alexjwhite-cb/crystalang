@@ -7,18 +7,61 @@ import (
 	"unicode"
 )
 
+type TokenType string
+
+const (
+	ILLEGAL = "ILLEGAL"
+	EOF     = "EOF"
+
+	//	Identifiers
+	IDENT  = "IDENT"
+	INT    = "INT"
+	STRING = "STRING"
+	BOOL   = "BOOL"
+
+	LBRACE = "{"
+	RBRACE = "}"
+	LPAREN = "("
+	RPAREN = ")"
+	LBRACK = "["
+	RBRACK = "]"
+
+	//	Delimiters
+	COMMA     = ","
+	SEMICOLON = ";"
+	COLON     = ":"
+
+	//	Operators
+	PLUS        = "+"
+	INCREMENT   = "++"
+	MINUS       = "-"
+	DECREMENT   = "--"
+	ASSIGN      = "="
+	EQUAL       = "=="
+	NOTEQUAL    = "!="
+	PASSTHROUGH = "->"
+	EXCLAMATION = "!"
+	QUESTION    = "?"
+
+	//	Keywords
+	METHOD   = "METHOD"
+	FOR      = "FOR"
+	IF       = "IF"
+	ELSE     = "ELSE"
+	DESCRIBE = "DESCRIBE"
+	OBJECT   = "OBJECT"
+	OVERLOAD = "OVERLOAD"
+)
+
 // Token represents the token-types available
 // during tokenization.
 type Token struct {
-	Type  string
+	Type  TokenType
 	Value any
 	Start int
 	End   int
 	Line  int
 }
-
-// Type describes the data type
-type Type string
 
 // TODO: Add ; type for statements that happen on the same line
 const (
@@ -52,7 +95,7 @@ func NewTokenizer() *Tokenizer {
 // newValueToken creates a new Token from Tokenizer values
 func (t *Tokenizer) newValueToken(tokenType string, value any, pos int) Token {
 	return Token{
-		Type:  tokenType,
+		Type:  TokenType(tokenType),
 		Value: value,
 		Start: pos - len(t.val),
 		End:   pos,
@@ -63,7 +106,7 @@ func (t *Tokenizer) newValueToken(tokenType string, value any, pos int) Token {
 // newRuneToken creates a new Token from the current rune
 func (t *Tokenizer) newRuneToken(tokenType string, value rune, pos int) Token {
 	return Token{
-		Type:  tokenType,
+		Type:  TokenType(tokenType),
 		Value: value,
 		Start: pos,
 		End:   pos + 1,
