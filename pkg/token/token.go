@@ -102,8 +102,7 @@ type Token struct {
 	Type    TokenType
 	Literal string
 	Start   int
-	//End     int
-	Line int
+	Line    int
 }
 
 // LookupIdent checks if an identity is a reserved word
