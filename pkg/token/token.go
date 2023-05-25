@@ -45,6 +45,7 @@ const (
 	MOREOREQUAL = ">="
 	AND         = "&&"
 	OR          = "||"
+	NEWLINE     = "\n"
 
 	//	Keywords
 	METHOD   = "METHOD"
@@ -96,6 +97,11 @@ var operators = map[string]TokenType{
 	"||": OR,
 }
 
+var newline = map[string]TokenType{
+	"\n": NEWLINE,
+	"\r": NEWLINE,
+}
+
 // Token represents the token-types available
 // during tokenization.
 type Token struct {
@@ -116,6 +122,14 @@ func LookupIdent(ident string) TokenType {
 // LookupOperator checks if a string of operators is valid
 func LookupOperator(op string) TokenType {
 	if tok, ok := operators[op]; ok {
+		return tok
+	}
+	return ILLEGAL
+}
+
+// LookupNewline checks if a linebrak
+func LookupNewline(crlf string) TokenType {
+	if tok, ok := newline[crlf]; ok {
 		return tok
 	}
 	return ILLEGAL

@@ -17,8 +17,8 @@ type Lexer struct {
 	char         rune
 }
 
-// NewLexer instantiates a new Lexer
-func NewLexer(input string) *Lexer {
+// New instantiates a new Lexer
+func New(input string) *Lexer {
 	l := &Lexer{input: input, line: 1}
 	l.readChar()
 	return l
@@ -80,6 +80,9 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.MULTIPLY, l.char, l.position, l.line)
 	case '/':
 		tok = newToken(token.DIVIDE, l.char, l.position, l.line)
+	case '\n', '\r':
+		tok = newToken(token.NEWLINE, l.char, l.position, l.line)
+		l.line++
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -191,7 +194,7 @@ func (l *Lexer) skipWhitespace() {
 	for unicode.IsSpace(l.char) {
 		switch l.char {
 		case '\n', '\r':
-			l.line++
+			return
 		}
 		l.readChar()
 	}
