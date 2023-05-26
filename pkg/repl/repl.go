@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/alexjwhite-cb/jet/pkg/lexer"
-	"github.com/alexjwhite-cb/jet/pkg/token"
+	"github.com/alexjwhite-cb/jet/pkg/parser"
 	"io"
 )
 
@@ -22,9 +22,11 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
-
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Fprintf(out, "%+v\n", tok)
-		}
+		p := parser.New(l)
+		program := p.ParseProgram()
+		fmt.Printf("%s\n", program.String())
+		//for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
+		//	fmt.Fprintf(out, "%+v\n", tok)
+		//}
 	}
 }
