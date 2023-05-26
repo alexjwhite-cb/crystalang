@@ -11,13 +11,26 @@ import (
 const (
 	_ int = iota
 	LOWEST
-	EQUALS   // ==
+	EQUALS   // == or !=
 	LESSMORE // < or >
-	SUM      // +
-	PRODUCT  // *
+	SUM      // + or -
+	PRODUCT  // * or /
 	PREFIX   // -x or !x
 	CALL     // myFunction()
 )
+
+var priority = map[token.TokenType]int{
+	token.EQUAL:       EQUALS,
+	token.NOTEQUAL:    EQUALS,
+	token.MOREOREQUAL: EQUALS,
+	token.LESSOREQUAL: EQUALS,
+	token.LESSTHAN:    LESSMORE,
+	token.MORETHAN:    LESSMORE,
+	token.PLUS:        SUM,
+	token.MINUS:       SUM,
+	token.MULTIPLY:    PRODUCT,
+	token.DIVIDE:      PRODUCT,
+}
 
 type (
 	prefixParseFn func() ast.Expr
@@ -49,6 +62,19 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentity)
 	p.registerPrefix(token.INT, p.parseIntLiteral)
+	p.registerPrefix(token.NOT, p.parsePrefixExpression)
+	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.EQUAL, p.parseInfixExpression)
+	p.registerInfix(token.NOTEQUAL, p.parseInfixExpression)
+	p.registerInfix(token.MOREOREQUAL, p.parseInfixExpression)
+	p.registerInfix(token.LESSOREQUAL, p.parseInfixExpression)
+	p.registerInfix(token.LESSTHAN, p.parseInfixExpression)
+	p.registerInfix(token.MORETHAN, p.parseInfixExpression)
+	p.registerInfix(token.PLUS, p.parseInfixExpression)
+	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.MULTIPLY, p.parseInfixExpression)
+	p.registerInfix(token.DIVIDE, p.parseInfixExpression)
 
 	//	 Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -125,13 +151,71 @@ func (p *Parser) parseIntLiteral() ast.Expr {
 	return lit
 }
 
-func (p *Parser) parseExpression(priority int) ast.Expr {
+func (p *Parser) noPrefixParseFnError(t token.Token) {
+	errToken := fmt.Sprintf("%s", t.Type)
+	if t.Type == token.ILLEGAL {
+		errToken = fmt.Sprintf("%s (%s)", t.Type, t.Literal)
+	}
+	msg := fmt.Sprintf("line %v, col %v: no prefix parse function for %s found", t.Line, t.Start, errToken)
+	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) peekPriority() int {
+	if prio, ok := priority[p.peekToken.Type]; ok {
+		return prio
+	}
+	return LOWEST
+}
+
+func (p *Parser) curPriority() int {
+	if prio, ok := priority[p.curToken.Type]; ok {
+		return prio
+	}
+	return LOWEST
+}
+
+func (p *Parser) parseExpression(prio int) ast.Expr {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
+		p.noPrefixParseFnError(p.curToken)
 		return nil
 	}
 	leftExp := prefix()
+
+	for !p.peekTokenIs(token.SEMICOLON) &&
+		!p.peekTokenIs(token.NEWLINE) &&
+		!p.peekTokenIs(token.EOF) &&
+		prio < p.peekPriority() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+		p.nextToken()
+		leftExp = infix(leftExp)
+	}
 	return leftExp
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expr {
+	expression := &ast.PrefixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+	}
+	p.nextToken()
+	expression.Right = p.parseExpression(PREFIX)
+	return expression
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expr) ast.Expr {
+	expression := &ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+	prio := p.curPriority()
+	p.nextToken()
+	expression.Right = p.parseExpression(prio)
+	return expression
 }
 
 func (p *Parser) parseIdentity() ast.Expr {

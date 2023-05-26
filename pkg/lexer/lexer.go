@@ -12,14 +12,14 @@ type Lexer struct {
 	position     int
 	readPosition int
 	start        int
-	end          int
 	line         int
+	column       int
 	char         rune
 }
 
 // New instantiates a new Lexer
 func New(input string) *Lexer {
-	l := &Lexer{input: input, line: 1}
+	l := &Lexer{input: input, line: 1, column: 1}
 	l.readChar()
 	return l
 }
@@ -184,8 +184,36 @@ func (l *Lexer) isOperator() bool {
 // readOperator concisely reads complex operators
 func (l *Lexer) readOperator() string {
 	l.start = l.position
-	for l.isOperator() {
+	switch l.char {
+	case '+':
 		l.readChar()
+		switch l.char {
+		case '+', '=':
+			l.readChar()
+		}
+	case '-':
+		l.readChar()
+		switch l.char {
+		case '-', '=', '>':
+			l.readChar()
+		}
+	case '!', '=', '<', '>':
+		l.readChar()
+		if l.char == '=' {
+			l.readChar()
+		}
+	case '&':
+		l.readChar()
+		if l.char == '&' {
+			l.readChar()
+		}
+	case '|':
+		l.readChar()
+		if l.char == '|' {
+			l.readChar()
+		}
+	case 0:
+
 	}
 	return l.input[l.start:l.position]
 }
