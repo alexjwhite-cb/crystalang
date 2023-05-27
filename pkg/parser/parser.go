@@ -17,6 +17,7 @@ const (
 	PRODUCT  // * or /
 	PREFIX   // -x or !x
 	CALL     // myFunction()
+	RETURN   // ->
 )
 
 var priority = map[token.TokenType]int{
@@ -34,8 +35,9 @@ var priority = map[token.TokenType]int{
 }
 
 type (
-	prefixParseFn func() ast.Expr
-	infixParseFn  func(ast.Expr) ast.Expr
+	prefixParseFn  func() ast.Expr
+	infixParseFn   func(ast.Expr) ast.Expr
+	postfixParseFn func(ast.Expr) ast.Expr
 )
 
 func (p *Parser) registerPrefix(tType token.TokenType, fn prefixParseFn) {
@@ -44,14 +46,18 @@ func (p *Parser) registerPrefix(tType token.TokenType, fn prefixParseFn) {
 func (p *Parser) registerInfix(tType token.TokenType, fn infixParseFn) {
 	p.infixParseFns[tType] = fn
 }
+func (p *Parser) registerPostfix(tType token.TokenType, fn postfixParseFn) {
+	p.postfixParseFns[tType] = fn
+}
 
 type Parser struct {
-	l              *lexer.Lexer
-	curToken       token.Token
-	peekToken      token.Token
-	prefixParseFns map[token.TokenType]prefixParseFn
-	infixParseFns  map[token.TokenType]infixParseFn
-	errors         []string
+	l               *lexer.Lexer
+	curToken        token.Token
+	peekToken       token.Token
+	prefixParseFns  map[token.TokenType]prefixParseFn
+	infixParseFns   map[token.TokenType]infixParseFn
+	postfixParseFns map[token.TokenType]postfixParseFn
+	errors          []string
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -82,6 +88,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.MULTIPLY, p.parseInfixExpression)
 	p.registerInfix(token.DIVIDE, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.postfixParseFns = make(map[token.TokenType]postfixParseFn)
+	//p.registerPostfix(token.PASSTHROUGH, p.parseReturnStatement)
 
 	//	 Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -109,15 +117,21 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Stmt {
+	var exp ast.Stmt
 	switch p.curToken.Type {
 	case token.IDENT:
 		if p.peekTokenIs(token.ASSIGN) {
 			return p.parseValueStatement()
 		}
-		return p.parseExpressionStatement()
+		exp = p.parseExpressionStatement()
 	default:
-		return p.parseExpressionStatement()
+		exp = p.parseExpressionStatement()
 	}
+	if p.peekTokenIs(token.PASSTHROUGH) {
+		p.nextToken()
+		exp = p.parseReturnStatement(exp)
+	}
+	return exp
 }
 
 func (p *Parser) parseValueStatement() *ast.ValueStmt {
@@ -133,6 +147,11 @@ func (p *Parser) parseValueStatement() *ast.ValueStmt {
 		p.nextToken()
 	}
 
+	return stmt
+}
+
+func (p *Parser) parseReturnStatement(left ast.Stmt) *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.curToken, Value: left}
 	return stmt
 }
 

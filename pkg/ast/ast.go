@@ -230,3 +230,20 @@ func (ce *CallExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
+
+type ReturnStatement struct {
+	Token token.Token
+	Value Stmt
+}
+
+func (rs *ReturnStatement) stmtNode()            {}
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+func (rs *ReturnStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	if rs.Value != nil {
+		out.WriteString(rs.Value.String())
+	}
+	out.WriteString(")->")
+	return out.String()
+}

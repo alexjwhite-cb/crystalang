@@ -40,6 +40,39 @@ func TestValueStmts(t *testing.T) {
 	}
 }
 
+func TestReturnStatements(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectValue interface{}
+	}{
+		{"(5)->", 5},
+		{"(true)->", true},
+		{"(y)->", "y"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program has not enough statements. got %d", len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ReturnStatement)
+		if !ok {
+			t.Fatalf("stmt not *ast.ReturnStatement, got %T", stmt)
+		}
+		t.Logf("%v\n", stmt)
+
+		//TODO: Fix testing return values
+		//if !testLiteralExpression(t, stmt, tt.expectValue) {
+		//	return
+		//}
+	}
+}
+
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {
