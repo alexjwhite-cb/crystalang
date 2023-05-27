@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/alexjwhite-cb/jet/pkg/token"
+	"strings"
 )
 
 type (
@@ -147,3 +148,85 @@ type Boolean struct {
 func (b *Boolean) exprNode()            {}
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
 func (b *Boolean) String() string       { return b.Token.Literal }
+
+type IfExpression struct {
+	Token       token.Token
+	Condition   Expr
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie *IfExpression) exprNode()            {}
+func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IfExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("if ")
+	out.WriteString(ie.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ie.Consequence.String())
+
+	if ie.Alternative != nil {
+		out.WriteString(" else ")
+		out.WriteString(ie.Alternative.String())
+	}
+	return out.String()
+}
+
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Stmt
+}
+
+func (bs *BlockStatement) stmtNode()            {}
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
+
+type FuncLiteral struct {
+	Token      token.Token
+	Parameters []*Ident
+	Body       *BlockStatement
+}
+
+func (fl *FuncLiteral) exprNode()            {}
+func (fl *FuncLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FuncLiteral) String() string {
+	var out bytes.Buffer
+	var params []string
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString(": ")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(fl.Body.String())
+	return out.String()
+}
+
+type CallExpression struct {
+	Token    token.Token
+	Function Expr
+	Args     []Expr
+}
+
+func (ce *CallExpression) exprNode()            {}
+func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
+func (ce *CallExpression) String() string {
+	var out bytes.Buffer
+	var args []string
+	for _, a := range ce.Args {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(ce.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
+	return out.String()
+}
