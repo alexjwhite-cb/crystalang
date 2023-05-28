@@ -67,9 +67,9 @@ func TestReturnStatements(t *testing.T) {
 		t.Logf("%v\n", stmt)
 
 		//TODO: Fix testing return values
-		//if !testLiteralExpression(t, stmt, tt.expectValue) {
-		//	return
-		//}
+		if !testLiteralExpression(t, stmt.Value.(*ast.ExpressionStmt).Expression, tt.expectValue) {
+			return
+		}
 	}
 }
 
