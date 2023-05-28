@@ -107,7 +107,7 @@ var newline = map[string]TokenType{
 type Token struct {
 	Type    TokenType
 	Literal string
-	Start   int
+	Col     int
 	Line    int
 }
 

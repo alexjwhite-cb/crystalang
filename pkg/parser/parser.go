@@ -141,8 +141,8 @@ func (p *Parser) parseValueStatement() *ast.ValueStmt {
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
-
-	//TODO: Handle Expressions
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
 	for !p.curTokenIs(token.SEMICOLON) && !p.curTokenIs(token.NEWLINE) && !p.curTokenIs(token.EOF) {
 		p.nextToken()
 	}
@@ -169,7 +169,7 @@ func (p *Parser) parseIntLiteral() ast.Expr {
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
 		msg := fmt.Sprintf("line %v, col %v: could not parse %q as integer",
-			p.curToken.Line, p.curToken.Start, p.curToken.Literal)
+			p.curToken.Line, p.curToken.Col, p.curToken.Literal)
 		p.errors = append(p.errors, msg)
 		return nil
 	}
@@ -182,7 +182,7 @@ func (p *Parser) noPrefixParseFnError(t token.Token) {
 	if t.Type == token.ILLEGAL {
 		errToken = fmt.Sprintf("%s (%s)", t.Type, t.Literal)
 	}
-	msg := fmt.Sprintf("line %v, col %v: no prefix parse function for %s found", t.Line, t.Start, errToken)
+	msg := fmt.Sprintf("line %v, col %v: no prefix parse function for %s found", t.Line, t.Col, errToken)
 	p.errors = append(p.errors, msg)
 }
 
@@ -207,6 +207,15 @@ func (p *Parser) parseExpression(prio int) ast.Expr {
 		return nil
 	}
 	leftExp := prefix()
+
+	// Temporarily handle a scenario like: x 4 "hello"
+	switch {
+	case p.peekTokenIs(token.IDENT), p.peekTokenIs(token.INT), p.peekTokenIs(token.STRING):
+		msg := fmt.Sprintf("line %v, col %v: no operator found between %q and %q",
+			p.curToken.Line, p.curToken.Col, p.curToken.Literal, p.peekToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
 
 	for !p.peekTokenIs(token.SEMICOLON) &&
 		!p.peekTokenIs(token.NEWLINE) &&
@@ -295,7 +304,7 @@ func (p *Parser) parseIfExpression() ast.Expr {
 		return nil
 	}
 	expression.Consequence = p.parseBlockStatement()
-	// TODO: Add Else if; change blow to a for-loop
+	// TODO: Add Else if; change below to a for-loop
 	if p.peekTokenIs(token.ELSE) {
 		p.nextToken()
 		// TODO: !peekTokenIs(token.IF) {} else {
@@ -385,6 +394,6 @@ func (p *Parser) peekError(expect token.TokenType, t token.Token) {
 	if peek == token.NEWLINE {
 		peek = "newline"
 	}
-	msg := fmt.Sprintf("line %v, col %v: expected %s, got %s", t.Line, t.Start, expect, p.peekToken.Type)
+	msg := fmt.Sprintf("line %v, col %v: expected %s, got %s", t.Line, t.Col, expect, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
 }

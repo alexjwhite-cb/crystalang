@@ -64,9 +64,7 @@ func TestReturnStatements(t *testing.T) {
 		if !ok {
 			t.Fatalf("stmt not *ast.ReturnStatement, got %T", stmt)
 		}
-		t.Logf("%v\n", stmt)
-
-		//TODO: Fix testing return values
+		
 		if !testLiteralExpression(t, stmt.Value.(*ast.ExpressionStmt).Expression, tt.expectValue) {
 			return
 		}

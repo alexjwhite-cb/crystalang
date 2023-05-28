@@ -13,13 +13,14 @@ type Lexer struct {
 	readPosition int
 	start        int
 	line         int
+	wordStart    int
 	column       int
 	char         rune
 }
 
 // New instantiates a new Lexer
 func New(input string) *Lexer {
-	l := &Lexer{input: input, line: 1, column: 1}
+	l := &Lexer{input: input, line: 1, column: 0}
 	l.readChar()
 	return l
 }
@@ -28,7 +29,7 @@ func newToken(tokenType token.TokenType, literal rune, start, line int) token.To
 	return token.Token{
 		Type:    tokenType,
 		Literal: string(literal),
-		Start:   start,
+		Col:     start,
 		Line:    line,
 	}
 }
@@ -55,34 +56,35 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.char {
 	case '{':
-		tok = newToken(token.LBRACE, l.char, l.position, l.line)
+		tok = newToken(token.LBRACE, l.char, l.column, l.line)
 	case '}':
-		tok = newToken(token.RBRACE, l.char, l.position, l.line)
+		tok = newToken(token.RBRACE, l.char, l.column, l.line)
 	case '(':
-		tok = newToken(token.LPAREN, l.char, l.position, l.line)
+		tok = newToken(token.LPAREN, l.char, l.column, l.line)
 	case ')':
-		tok = newToken(token.RPAREN, l.char, l.position, l.line)
+		tok = newToken(token.RPAREN, l.char, l.column, l.line)
 	case '[':
-		tok = newToken(token.LBRACK, l.char, l.position, l.line)
+		tok = newToken(token.LBRACK, l.char, l.column, l.line)
 	case ']':
-		tok = newToken(token.RBRACK, l.char, l.position, l.line)
+		tok = newToken(token.RBRACK, l.char, l.column, l.line)
 	case ',':
-		tok = newToken(token.COMMA, l.char, l.position, l.line)
+		tok = newToken(token.COMMA, l.char, l.column, l.line)
 	case '.':
-		tok = newToken(token.STOP, l.char, l.position, l.line)
+		tok = newToken(token.STOP, l.char, l.column, l.line)
 	case ';':
-		tok = newToken(token.SEMICOLON, l.char, l.position, l.line)
+		tok = newToken(token.SEMICOLON, l.char, l.column, l.line)
 	case ':':
-		tok = newToken(token.COLON, l.char, l.position, l.line)
+		tok = newToken(token.COLON, l.char, l.column, l.line)
 	case '?':
-		tok = newToken(token.QUESTION, l.char, l.position, l.line)
+		tok = newToken(token.QUESTION, l.char, l.column, l.line)
 	case '*':
-		tok = newToken(token.MULTIPLY, l.char, l.position, l.line)
+		tok = newToken(token.MULTIPLY, l.char, l.column, l.line)
 	case '/':
-		tok = newToken(token.DIVIDE, l.char, l.position, l.line)
+		tok = newToken(token.DIVIDE, l.char, l.column, l.line)
 	case '\n', '\r':
-		tok = newToken(token.NEWLINE, l.char, l.position, l.line)
+		tok = newToken(token.NEWLINE, l.char, l.column, l.line)
 		l.line++
+		l.column = 0
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -92,36 +94,37 @@ func (l *Lexer) NextToken() token.Token {
 		case unicode.IsLetter(l.char):
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
-			tok.Start = l.start
+			tok.Col = l.wordStart
 			tok.Line = l.line
 			return tok
 
 		case unicode.IsNumber(l.char):
 			tok.Literal = l.readInt()
 			tok.Type = token.INT
-			tok.Start = l.start
+			tok.Col = l.wordStart
 			tok.Line = l.line
 			return tok
 
 		case l.isOperator():
 			tok.Literal = l.readOperator()
 			tok.Type = token.LookupOperator(tok.Literal)
-			tok.Start = l.start
+			tok.Col = l.wordStart
 			tok.Line = l.line
 			return tok
 
 		case l.char == '"':
 			tok.Literal = l.readString()
 			tok.Type = token.STRING
-			tok.Start = l.start
+			tok.Col = l.wordStart
 			tok.Line = l.line
 			return tok
 
 		default:
-			tok = newToken(token.ILLEGAL, l.char, l.position, l.line)
+			tok = newToken(token.ILLEGAL, l.char, l.column, l.line)
 		}
 
 	}
+
 	l.readChar()
 	return tok
 
@@ -137,11 +140,13 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition += 1
+	l.column += 1
 }
 
 // readIdentifier concisely reads variables, function names, and keywords
 func (l *Lexer) readIdentifier() string {
 	l.start = l.position
+	l.wordStart = l.column
 	for unicode.IsLetter(l.char) || unicode.IsDigit(l.char) || l.char == '_' {
 		l.readChar()
 	}
@@ -151,6 +156,7 @@ func (l *Lexer) readIdentifier() string {
 // readInt concisely reads integer values
 func (l *Lexer) readInt() string {
 	l.start = l.position
+	l.wordStart = l.column
 	for unicode.IsNumber(l.char) {
 		l.readChar()
 	}
@@ -160,6 +166,7 @@ func (l *Lexer) readInt() string {
 // readInt concisely reads integer values
 func (l *Lexer) readString() string {
 	l.start = l.position
+	l.wordStart = l.column
 	l.readChar()
 	for l.char != '"' && l.char != 0 {
 		if l.char == '\\' && l.input[l.readPosition] == '"' {
@@ -184,6 +191,7 @@ func (l *Lexer) isOperator() bool {
 // readOperator concisely reads complex operators
 func (l *Lexer) readOperator() string {
 	l.start = l.position
+	l.wordStart = l.column
 	switch l.char {
 	case '+':
 		l.readChar()
