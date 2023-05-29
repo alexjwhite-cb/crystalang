@@ -267,12 +267,11 @@ func TestMethodApplication(t *testing.T) {
 	}
 }
 
-// TODO: Fix this test; multiple line closures appear broken
 func TestClosures(t *testing.T) {
 	input := `newAdder = meth: x {
-				meth: y { x + y }
+				(meth: y { x + y })->
 			}
 			addTwo = newAdder(2)
 			addTwo(3)`
-	testIntegerObject(t, testEval(input), 5)
+	testIntegerObject(t, testEval(input), 8)
 }
