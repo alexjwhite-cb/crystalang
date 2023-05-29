@@ -1,16 +1,21 @@
 package object
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/alexjwhite-cb/jet/pkg/ast"
+	"strings"
 )
 
 type ObjectType string
 
 const (
 	NULL_OBJ         = "NULL"
+	ERROR_OBJ        = "ERROR"
 	INTEGER_OBJ      = "INTEGER"
 	BOOLEAN_OBJ      = "BOOLEAN"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
+	METHOD_OBJ       = "METHOD"
 )
 
 type Object interface {
@@ -22,6 +27,13 @@ type Null struct{}
 
 func (n *Null) Inspect() string  { return "null" }
 func (n *Null) Type() ObjectType { return BOOLEAN_OBJ }
+
+type Error struct {
+	Message string
+}
+
+func (e *Error) Type() ObjectType { return ERROR_OBJ }
+func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
 
 type Integer struct {
 	Value int64
@@ -43,3 +55,26 @@ type ReturnValue struct {
 
 func (r *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
 func (r *ReturnValue) Inspect() string  { return r.Value.Inspect() }
+
+type Method struct {
+	Parameters []*ast.Ident
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+func (m *Method) Type() ObjectType { return METHOD_OBJ }
+func (m *Method) Inspect() string {
+	var out bytes.Buffer
+	var params []string
+
+	for _, p := range m.Parameters {
+		params = append(params, p.String())
+	}
+	out.WriteString("meth")
+	out.WriteString(": ")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(" {\n")
+	out.WriteString(m.Body.String())
+	out.WriteString("\n}")
+	return out.String()
+}
