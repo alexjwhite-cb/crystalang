@@ -11,13 +11,13 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	POSTFIX  // ->
 	EQUALS   // == or !=
 	LESSMORE // < or >
 	SUM      // + or -
 	PRODUCT  // * or /
 	PREFIX   // -x or !x
 	CALL     // myFunction()
-	RETURN   // ->
 )
 
 var priority = map[token.TokenType]int{
@@ -32,12 +32,13 @@ var priority = map[token.TokenType]int{
 	token.MULTIPLY:    PRODUCT,
 	token.DIVIDE:      PRODUCT,
 	token.LPAREN:      CALL,
+	token.PASSTHROUGH: POSTFIX,
 }
 
 type (
 	prefixParseFn  func() ast.Expr
 	infixParseFn   func(ast.Expr) ast.Expr
-	postfixParseFn func(ast.Expr) ast.Expr
+	postfixParseFn func(ast.Stmt) ast.Stmt
 )
 
 func (p *Parser) registerPrefix(tType token.TokenType, fn prefixParseFn) {
@@ -89,7 +90,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.DIVIDE, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.postfixParseFns = make(map[token.TokenType]postfixParseFn)
-	//p.registerPostfix(token.PASSTHROUGH, p.parseReturnStatement)
+	p.registerPostfix(token.PASSTHROUGH, p.parseReturnStatement)
 
 	//	 Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -127,10 +128,7 @@ func (p *Parser) parseStatement() ast.Stmt {
 	default:
 		exp = p.parseExpressionStatement()
 	}
-	if p.peekTokenIs(token.PASSTHROUGH) {
-		p.nextToken()
-		exp = p.parseReturnStatement(exp)
-	}
+	exp = p.parsePostfixExpressionStatement(exp)
 	return exp
 }
 
@@ -150,15 +148,22 @@ func (p *Parser) parseValueStatement() *ast.ValueStmt {
 	return stmt
 }
 
-func (p *Parser) parseReturnStatement(left ast.Stmt) *ast.ReturnStatement {
-	stmt := &ast.ReturnStatement{Token: p.curToken, Value: left}
+func (p *Parser) parseReturnStatement(left ast.Stmt) ast.Stmt {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+	expr, ok := left.(*ast.ExpressionStmt)
+	if !ok {
+		msg := fmt.Sprintf("line %v, col %v: illegal return", p.curToken.Line, p.curToken.Col)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+	stmt.Value = expr.Expression
 	return stmt
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStmt {
 	stmt := &ast.ExpressionStmt{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
-	if p.peekTokenIs(token.SEMICOLON) {
+	if p.peekTokenIs(token.SEMICOLON) || p.peekTokenIs(token.PASSTHROUGH) {
 		p.nextToken()
 	}
 	return stmt
@@ -220,14 +225,18 @@ func (p *Parser) parseExpression(prio int) ast.Expr {
 	for !p.peekTokenIs(token.SEMICOLON) &&
 		!p.peekTokenIs(token.NEWLINE) &&
 		!p.peekTokenIs(token.EOF) &&
+		!p.peekTokenIs(token.PASSTHROUGH) &&
 		prio < p.peekPriority() {
+		//if _, ok := leftExp.(*ast.IfExpression); !ok {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
 			return leftExp
 		}
 		p.nextToken()
 		leftExp = infix(leftExp)
+		//}
 	}
+
 	return leftExp
 }
 
@@ -251,6 +260,15 @@ func (p *Parser) parseInfixExpression(left ast.Expr) ast.Expr {
 	p.nextToken()
 	expression.Right = p.parseExpression(prio)
 	return expression
+}
+
+func (p *Parser) parsePostfixExpressionStatement(left ast.Stmt) ast.Stmt {
+	postfix := p.postfixParseFns[p.curToken.Type]
+	if postfix == nil {
+		return left
+	}
+	stmt := postfix(left)
+	return stmt
 }
 
 func (p *Parser) parseCallExpression(function ast.Expr) ast.Expr {

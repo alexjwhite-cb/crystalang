@@ -1,19 +1,27 @@
 package object
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ObjectType string
 
 const (
-	INTEGER_OBJ = "INTEGER"
-	BOOLEAN_OBJ = "BOOLEAN"
-	NULL_OBJ    = "NULL"
+	NULL_OBJ         = "NULL"
+	INTEGER_OBJ      = "INTEGER"
+	BOOLEAN_OBJ      = "BOOLEAN"
+	RETURN_VALUE_OBJ = "RETURN_VALUE"
 )
 
 type Object interface {
 	Type() ObjectType
 	Inspect() string
 }
+
+type Null struct{}
+
+func (n *Null) Inspect() string  { return "null" }
+func (n *Null) Type() ObjectType { return BOOLEAN_OBJ }
 
 type Integer struct {
 	Value int64
@@ -29,7 +37,9 @@ type Boolean struct {
 func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
 
-type Null struct{}
+type ReturnValue struct {
+	Value Object
+}
 
-func (n *Null) Inspect() string  { return "null" }
-func (n *Null) Type() ObjectType { return BOOLEAN_OBJ }
+func (r *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
+func (r *ReturnValue) Inspect() string  { return r.Value.Inspect() }

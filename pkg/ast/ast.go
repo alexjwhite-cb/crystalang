@@ -140,6 +140,23 @@ func (i *InfixExpression) String() string {
 	return out.String()
 }
 
+type PostfixExpression struct {
+	Token    token.Token
+	Operator string
+	Left     Expr
+}
+
+func (p *PostfixExpression) stmtNode()            {}
+func (p *PostfixExpression) TokenLiteral() string { return p.Token.Literal }
+func (p *PostfixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(p.Left.String())
+	out.WriteString(")")
+	out.WriteString(p.Operator)
+	return out.String()
+}
+
 type Boolean struct {
 	Token token.Token
 	Value bool
@@ -181,9 +198,11 @@ func (bs *BlockStatement) stmtNode()            {}
 func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
 func (bs *BlockStatement) String() string {
 	var out bytes.Buffer
+	out.WriteString("{ ")
 	for _, s := range bs.Statements {
 		out.WriteString(s.String())
 	}
+	out.WriteString(" }")
 	return out.String()
 }
 
@@ -233,7 +252,7 @@ func (ce *CallExpression) String() string {
 
 type ReturnStatement struct {
 	Token token.Token
-	Value Stmt
+	Value Expr
 }
 
 func (rs *ReturnStatement) stmtNode()            {}

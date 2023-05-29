@@ -62,10 +62,11 @@ func TestReturnStatements(t *testing.T) {
 
 		stmt, ok := program.Statements[0].(*ast.ReturnStatement)
 		if !ok {
-			t.Fatalf("stmt not *ast.ReturnStatement, got %T", stmt)
+			t.Errorf("%+v", program.Statements[0])
+			t.Fatalf("stmt not *ast.ReturnStatement, got %T", program.Statements[0])
 		}
-		
-		if !testLiteralExpression(t, stmt.Value.(*ast.ExpressionStmt).Expression, tt.expectValue) {
+
+		if !testLiteralExpression(t, stmt.Value, tt.expectValue) {
 			return
 		}
 	}
