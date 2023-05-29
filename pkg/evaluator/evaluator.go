@@ -104,9 +104,9 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	for _, stmt := range program.Statements {
 		result = Eval(stmt, env)
 
-		switch retval := result.(type) {
+		switch retVal := result.(type) {
 		case *object.ReturnValue:
-			return retval.Value
+			return retVal.Value
 		case *object.Error:
 			return result
 		}
