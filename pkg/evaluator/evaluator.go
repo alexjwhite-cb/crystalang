@@ -72,7 +72,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalInfixExpression(n.Operator, left, right)
 
 	case *ast.BlockStatement:
-		return evalBlockStatement(n)
+		return evalBlockStatement(n, env)
 
 	case *ast.IfExpression:
 		return evalIfExpression(n, env)
@@ -117,7 +117,6 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 
 func evalIdentifier(node *ast.Ident, env *object.Environment) object.Object {
 	val, ok := env.Get(node.Value)
-	fmt.Printf("evalIdent: %+v, %t", val, ok)
 	if !ok {
 		return newError("identifier not found: %s", node.Value)
 	}
@@ -132,17 +131,17 @@ func nativeBoolToBooleanObj(in bool) *object.Boolean {
 }
 
 func evalExpressions(exps []ast.Expr, env *object.Environment) []object.Object {
-	var result []object.Object
+	var results []object.Object
 
 	for _, e := range exps {
 		evaluated := Eval(e, env)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}
-		result = append(result, evaluated)
+		results = append(results, evaluated)
 	}
 
-	return result
+	return results
 }
 
 func evalPrefixExpressions(operator string, right object.Object) object.Object {
@@ -235,9 +234,8 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	}
 }
 
-func evalBlockStatement(block *ast.BlockStatement) object.Object {
+func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
-	env := object.NewEnvironment()
 
 	for _, stmt := range block.Statements {
 		result = Eval(stmt, env)
@@ -260,7 +258,6 @@ func applyMethod(fn object.Object, args []object.Object) object.Object {
 	}
 	extendedEnv := extendFunctionEnv(function, args)
 	evaluated := Eval(function.Body, extendedEnv)
-	fmt.Printf("%+v\n", unwrapReturnValue(evaluated))
 	return unwrapReturnValue(evaluated)
 }
 
@@ -269,7 +266,6 @@ func extendFunctionEnv(fn *object.Method, args []object.Object) *object.Environm
 	for paramIdx, param := range fn.Parameters {
 		env.Set(param.Value, args[paramIdx])
 	}
-	fmt.Printf("%+v\n", env)
 	return env
 }
 

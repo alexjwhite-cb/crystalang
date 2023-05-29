@@ -254,11 +254,11 @@ func TestMethodApplication(t *testing.T) {
 		input   string
 		expects int64
 	}{
-		{"identity = meth: x { x }; identity(5)", 5},
-		{"identity = meth: x { (x)-> }; identity(5)", 5},
-		{"double = meth: x { x * 2 }; identity(5)", 10},
-		{"add = meth: x, y { x + y }; add(5, 5)", 10},
-		{"add = meth: x, y { x + y }; add(5 + 5, add(5, 5))", 20},
+		{"identity = meth: x { x }; identity(5);", 5},
+		{"identity = meth: x { (x)-> }; identity(5);", 5},
+		{"double = meth: x { x * 2 }; double(5);", 10},
+		{"add = meth: x, y { x + y }; add(5, 5);", 10},
+		{"add = meth: x, y { x + y }; add(5 + 5, add(5, 5));", 20},
 		{"meth: x { x }(5)", 5},
 	}
 
