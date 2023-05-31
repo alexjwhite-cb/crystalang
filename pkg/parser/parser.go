@@ -18,6 +18,7 @@ const (
 	PRODUCT  // * or /
 	PREFIX   // -x or !x
 	CALL     // myFunction()
+	INDEX    // array[index]
 )
 
 var priority = map[token.TokenType]int{
@@ -33,6 +34,7 @@ var priority = map[token.TokenType]int{
 	token.DIVIDE:      PRODUCT,
 	token.LPAREN:      CALL,
 	token.PASSTHROUGH: POSTFIX,
+	token.LBRACK:      INDEX,
 }
 
 type (
@@ -78,6 +80,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.METHOD, p.parseFuncLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
+	p.registerPrefix(token.LBRACK, p.parseArrayLiteral)
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.EQUAL, p.parseInfixExpression)
 	p.registerInfix(token.NOTEQUAL, p.parseInfixExpression)
@@ -90,6 +93,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.MULTIPLY, p.parseInfixExpression)
 	p.registerInfix(token.DIVIDE, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACK, p.parseIndexExpression)
 	p.postfixParseFns = make(map[token.TokenType]postfixParseFn)
 	p.registerPostfix(token.PASSTHROUGH, p.parseReturnStatement)
 
@@ -187,6 +191,12 @@ func (p *Parser) parseStringLiteral() ast.Expr {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }
 
+func (p *Parser) parseArrayLiteral() ast.Expr {
+	array := &ast.ArrayLiteral{Token: p.curToken}
+	array.Elements = p.parseExpressionList(token.RBRACK)
+	return array
+}
+
 func (p *Parser) noPrefixParseFnError(t token.Token) {
 	errToken := fmt.Sprintf("%s", t.Type)
 	if t.Type == token.ILLEGAL {
@@ -276,6 +286,17 @@ func (p *Parser) parsePostfixExpressionStatement(left ast.Stmt) ast.Stmt {
 	return stmt
 }
 
+func (p *Parser) parseIndexExpression(left ast.Expr) ast.Expr {
+	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
+	p.nextToken()
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACK) {
+		return nil
+	}
+	return exp
+}
+
 func (p *Parser) parseCallExpression(function ast.Expr) ast.Expr {
 	exp := &ast.CallExpression{Token: p.curToken, Function: function}
 	exp.Args = p.parseCallArguments()
@@ -317,6 +338,28 @@ func (p *Parser) parseGroupedExpression() ast.Expr {
 		return nil
 	}
 	return exp
+}
+
+func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expr {
+	list := []ast.Expr{}
+
+	if p.peekTokenIs(end) {
+		p.nextToken()
+		return list
+	}
+
+	p.nextToken()
+	list = append(list, p.parseExpression(LOWEST))
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		list = append(list, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(end) {
+		return nil
+	}
+	return list
 }
 
 func (p *Parser) parseIfExpression() ast.Expr {
