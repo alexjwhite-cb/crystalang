@@ -26,6 +26,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.Boolean:
 		return nativeBoolToBooleanObj(n.Value)
 
+	case *ast.StringLiteral:
+		return &object.String{Value: n.Value}
+
 	case *ast.ValueStmt:
 		val := Eval(n.Value, env)
 		if isError(val) {

@@ -165,17 +165,20 @@ func (l *Lexer) readInt() string {
 
 // readInt concisely reads integer values
 func (l *Lexer) readString() string {
-	l.start = l.position
+	l.start = l.position + 1
 	l.wordStart = l.column
-	l.readChar()
-	for l.char != '"' && l.char != 0 {
+	for {
+		l.readChar()
 		if l.char == '\\' && l.input[l.readPosition] == '"' {
 			l.readChar()
+			continue
 		}
-		l.readChar()
+		if l.char == '"' || l.char == 0 {
+			l.readChar()
+			break
+		}
 	}
-	l.readChar()
-	return l.input[l.start:l.position]
+	return l.input[l.start : l.position-1]
 }
 
 // IsOperator checks to see if the current string value

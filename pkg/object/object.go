@@ -16,6 +16,7 @@ const (
 	BOOLEAN_OBJ      = "BOOLEAN"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	METHOD_OBJ       = "METHOD"
+	STRING_OBJ       = "STRING"
 )
 
 type Object interface {
@@ -78,3 +79,10 @@ func (m *Method) Inspect() string {
 	out.WriteString("\n}")
 	return out.String()
 }
+
+type String struct {
+	Value string
+}
+
+func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) Inspect() string  { return s.Value }
