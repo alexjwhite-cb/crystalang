@@ -119,11 +119,13 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 }
 
 func evalIdentifier(node *ast.Ident, env *object.Environment) object.Object {
-	val, ok := env.Get(node.Value)
-	if !ok {
-		return newError("identifier not found: %s", node.Value)
+	if val, ok := env.Get(node.Value); ok {
+		return val
 	}
-	return val
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+	return newError("identifier not found: %s", node.Value)
 }
 
 func nativeBoolToBooleanObj(in bool) *object.Boolean {
@@ -267,13 +269,15 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 }
 
 func applyMethod(fn object.Object, args []object.Object) object.Object {
-	function, ok := fn.(*object.Method)
-	if !ok {
-		return newError("not a function: %s", fn.Type())
+	switch method := fn.(type) {
+	case *object.Method:
+		extendedEnv := extendFunctionEnv(method, args)
+		evaluated := Eval(method.Body, extendedEnv)
+		return unwrapReturnValue(evaluated)
+	case *object.BuiltIn:
+		return method.Method(args...)
 	}
-	extendedEnv := extendFunctionEnv(function, args)
-	evaluated := Eval(function.Body, extendedEnv)
-	return unwrapReturnValue(evaluated)
+	return newError("not a function: %s", fn.Type())
 }
 
 func extendFunctionEnv(fn *object.Method, args []object.Object) *object.Environment {
