@@ -81,6 +81,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.METHOD, p.parseFuncLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.LBRACK, p.parseArrayLiteral)
+	p.registerPrefix(token.LBRACE, p.parseHashMap)
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.EQUAL, p.parseInfixExpression)
 	p.registerInfix(token.NOTEQUAL, p.parseInfixExpression)
@@ -195,6 +196,38 @@ func (p *Parser) parseArrayLiteral() ast.Expr {
 	array := &ast.ArrayLiteral{Token: p.curToken}
 	array.Elements = p.parseExpressionList(token.RBRACK)
 	return array
+}
+
+func (p *Parser) parseHashMap() ast.Expr {
+	hash := &ast.HashMap{Token: p.curToken}
+	hash.Pairs = make(map[ast.Expr]ast.Expr)
+
+hashLoop:
+	for !p.peekTokenIs(token.RBRACE) && !p.peekTokenIs(token.EOF) {
+		p.nextToken()
+		for p.curTokenIs(token.NEWLINE) {
+			if p.peekTokenIs(token.RBRACE) {
+				break hashLoop
+			}
+			p.nextToken()
+		}
+		key := p.parseExpression(LOWEST)
+
+		if !p.expectPeek(token.COLON) {
+			return nil
+		}
+
+		p.nextToken()
+		value := p.parseExpression(LOWEST)
+		hash.Pairs[key] = value
+		if !p.peekTokenIs(token.RBRACE) && !p.expectPeek(token.COMMA) {
+			return nil
+		}
+	}
+	if !p.expectPeek(token.RBRACE) {
+		return nil
+	}
+	return hash
 }
 
 func (p *Parser) noPrefixParseFnError(t token.Token) {

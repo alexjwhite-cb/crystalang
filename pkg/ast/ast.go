@@ -313,3 +313,23 @@ func (ie *IndexExpression) String() string {
 	out.WriteString("])")
 	return out.String()
 }
+
+type HashMap struct {
+	Token token.Token
+	Pairs map[Expr]Expr
+}
+
+func (h *HashMap) exprNode()            {}
+func (h *HashMap) TokenLiteral() string { return h.Token.Literal }
+func (h *HashMap) String() string {
+	var out bytes.Buffer
+
+	var pairs []string
+	for k, v := range h.Pairs {
+		pairs = append(pairs, k.String()+":"+v.String())
+	}
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString(("}"))
+	return out.String()
+}

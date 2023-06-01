@@ -47,6 +47,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return evalIndexExpression(left, index)
 
+	case *ast.HashMap:
+		return evalHashMap(n, env)
+
 	case *ast.ValueStmt:
 		val := Eval(n.Value, env)
 		if isError(val) {
@@ -293,6 +296,33 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	default:
 		return newError("index operator not supported: %s", left.Type())
 	}
+}
+
+func evalHashMap(node *ast.HashMap, env *object.Environment) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+
+	for keyNode, valueNode := range node.Pairs {
+		key := Eval(keyNode, env)
+		if isError(key) {
+			return key
+		}
+
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newError("unusable as hash key: %s", key.Type())
+		}
+
+		value := Eval(valueNode, env)
+		if isError(value) {
+			fmt.Printf("here")
+			return value
+		}
+
+		hashed := hashKey.HashKey()
+		pairs[hashed] = object.HashPair{Key: key, Value: value}
+	}
+
+	return &object.HashMap{Pairs: pairs}
 }
 
 func evalArrayIndexExpression(array, index object.Object) object.Object {
