@@ -1,10 +1,37 @@
 package evaluator
 
 import (
+	"fmt"
 	"github.com/alexjwhite-cb/jet/pkg/object"
+	"strings"
 )
 
 var builtins = map[string]*object.BuiltIn{
+	"puts": {
+		Method: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+			return nil
+		},
+	},
+
+	"print": {
+		Method: func(args ...object.Object) object.Object {
+			var out []string
+			for _, arg := range args {
+				switch a := arg.(type) {
+				case *object.String:
+					out = append(out, a.Value)
+
+				default:
+					return newError("argument to `print` not supported, got %s", arg.Type())
+				}
+			}
+			print(strings.Join(out, ""))
+			return nil
+		},
+	},
 
 	"len": {
 		Method: func(args ...object.Object) object.Object {
