@@ -262,6 +262,7 @@ func TestMethodApplication(t *testing.T) {
 		{"add = meth: x, y { x + y }; add(5, 5);", 10},
 		{"add = meth: x, y { x + y }; add(5 + 5, add(5, 5));", 20},
 		{"meth: x { x }(5)", 5},
+		{"meth add: x, y { (x + y)-> }; add(5 + 5, add(5, 5));", 20},
 	}
 
 	for _, tt := range tests {

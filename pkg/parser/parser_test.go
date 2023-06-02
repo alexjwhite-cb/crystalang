@@ -464,21 +464,21 @@ func TestFuncDeclarationParsing(t *testing.T) {
 	if function.Name.Value != "add" {
 		t.Fatalf("function.Value is not %q, got %q", "add", function.Name.Value)
 	}
-
-	if len(function.Parameters) != 2 {
-		t.Fatalf("function.Parameters does not contain %d parameters, got %d", 2, len(function.Parameters))
+	funcLiteral := function.Func.(ast.Expr).(*ast.FuncLiteral)
+	if len(funcLiteral.Parameters) != 2 {
+		t.Fatalf("funcLiteral.Parameters does not contain %d parameters, got %d", 2, len(funcLiteral.Parameters))
 	}
 
-	testLiteralExpression(t, function.Parameters[0], "x")
-	testLiteralExpression(t, function.Parameters[1], "y")
+	testLiteralExpression(t, funcLiteral.Parameters[0], "x")
+	testLiteralExpression(t, funcLiteral.Parameters[1], "y")
 
-	if len(function.Body.Statements) != 1 {
-		t.Fatalf("function.Body.Statements does not contain %d statements, got %d", 1, len(function.Body.Statements))
+	if len(funcLiteral.Body.Statements) != 1 {
+		t.Fatalf("funcLiteral.Body.Statements does not contain %d statements, got %d", 1, len(funcLiteral.Body.Statements))
 	}
 
-	bodyStmt, ok := function.Body.Statements[0].(*ast.ExpressionStmt)
+	bodyStmt, ok := funcLiteral.Body.Statements[0].(*ast.ExpressionStmt)
 	if !ok {
-		t.Fatalf("function.Body.Statements[0] is not ast.ExpressionStmt, got %T", function.Body.Statements[0])
+		t.Fatalf("funcLiteral.Body.Statements[0] is not ast.ExpressionStmt, got %T", funcLiteral.Body.Statements[0])
 	}
 	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
 }

@@ -212,17 +212,7 @@ func (p *Parser) parseDeclaration() ast.Decl {
 func (p *Parser) parseFunctionDeclaration() *ast.FuncDeclaration {
 	fn := &ast.FuncDeclaration{Token: p.curToken}
 	p.nextToken()
-	if p.peekTokenIs(token.COLON) {
-		p.nextToken()
-		fn.Parameters = p.parseFunctionParameters()
-	} else {
-		fn.Parameters = nil
-	}
-	if !p.expectPeek(token.LBRACE) {
-		return nil
-	}
-
-	fn.Body = p.parseBlockStatement()
+	fn.Func = p.parseFuncLiteral()
 	return fn
 }
 
@@ -264,8 +254,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Ident {
 		return nil
 	}
 	p.nextToken()
-	ident := &ast.Ident{Token: p.curToken, Value: p.curToken.Literal}
-	idents = append(idents, ident)
+	idents = append(idents, &ast.Ident{Token: p.curToken, Value: p.curToken.Literal})
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()

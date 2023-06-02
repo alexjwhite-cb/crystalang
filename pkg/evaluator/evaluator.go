@@ -20,6 +20,16 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.ExpressionStmt:
 		return Eval(n.Expression, env)
 
+	case *ast.DeclarationStmt:
+		return Eval(n.Declaration, env)
+
+	case *ast.FuncDeclaration:
+		val := Eval(n.Func, env)
+		if isError(val) {
+			return val
+		}
+		env.Set(n.Name.Value, val)
+
 	case *ast.IntLiteral:
 		return &object.Integer{Value: n.Value}
 

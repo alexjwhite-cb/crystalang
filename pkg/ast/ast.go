@@ -69,10 +69,9 @@ func (ds *DeclarationStmt) String() string {
 }
 
 type FuncDeclaration struct {
-	Token      token.Token
-	Name       *Ident
-	Parameters []*Ident
-	Body       *BlockStatement
+	Token token.Token
+	Name  *Ident
+	Func  Expr
 }
 
 func (fn *FuncDeclaration) declNode()            {}
@@ -80,7 +79,8 @@ func (fn *FuncDeclaration) TokenLiteral() string { return fn.Token.Literal }
 func (fn *FuncDeclaration) String() string {
 	var out bytes.Buffer
 	var params []string
-	for _, p := range fn.Parameters {
+	lit := fn.Func.(Expr).(*FuncLiteral)
+	for _, p := range lit.Parameters {
 		params = append(params, p.String())
 	}
 
@@ -88,7 +88,7 @@ func (fn *FuncDeclaration) String() string {
 	out.WriteString(" " + fn.Name.String())
 	out.WriteString(": ")
 	out.WriteString(strings.Join(params, ", "))
-	out.WriteString(fn.Body.String())
+	out.WriteString(lit.Body.String())
 	return out.String()
 }
 
