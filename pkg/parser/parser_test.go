@@ -442,6 +442,47 @@ func TestIfElseExpression(t *testing.T) {
 	}
 }
 
+func TestFuncDeclarationParsing(t *testing.T) {
+	input := `meth add: x, y { x + y }`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements, got %d", 1, len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.DeclarationStmt)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.DeclarationStmt, got %T", program.Statements[0])
+	}
+
+	function, ok := stmt.Declaration.(*ast.FuncDeclaration)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.FuncLiteral, got %T", stmt.Declaration)
+	}
+
+	if function.Name.Value != "add" {
+		t.Fatalf("function.Value is not %q, got %q", "add", function.Name.Value)
+	}
+
+	if len(function.Parameters) != 2 {
+		t.Fatalf("function.Parameters does not contain %d parameters, got %d", 2, len(function.Parameters))
+	}
+
+	testLiteralExpression(t, function.Parameters[0], "x")
+	testLiteralExpression(t, function.Parameters[1], "y")
+
+	if len(function.Body.Statements) != 1 {
+		t.Fatalf("function.Body.Statements does not contain %d statements, got %d", 1, len(function.Body.Statements))
+	}
+
+	bodyStmt, ok := function.Body.Statements[0].(*ast.ExpressionStmt)
+	if !ok {
+		t.Fatalf("function.Body.Statements[0] is not ast.ExpressionStmt, got %T", function.Body.Statements[0])
+	}
+	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+}
+
 func TestFuncLiteralParsing(t *testing.T) {
 	input := `meth: x, y { x + y }`
 	l := lexer.New(input)

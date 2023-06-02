@@ -35,7 +35,8 @@ type (
 )
 
 type Program struct {
-	Statements []Stmt
+	Declarations []Decl
+	Statements   []Stmt
 }
 
 func (p *Program) TokenLiteral() string {
@@ -50,6 +51,44 @@ func (p *Program) String() string {
 	for _, s := range p.Statements {
 		out.WriteString(s.String())
 	}
+	return out.String()
+}
+
+type DeclarationStmt struct {
+	Token       token.Token
+	Declaration Decl
+}
+
+func (ds *DeclarationStmt) stmtNode()            {}
+func (ds *DeclarationStmt) TokenLiteral() string { return ds.Token.Literal }
+func (ds *DeclarationStmt) String() string {
+	if ds.Declaration != nil {
+		return ds.Declaration.String()
+	}
+	return ""
+}
+
+type FuncDeclaration struct {
+	Token      token.Token
+	Name       *Ident
+	Parameters []*Ident
+	Body       *BlockStatement
+}
+
+func (fn *FuncDeclaration) declNode()            {}
+func (fn *FuncDeclaration) TokenLiteral() string { return fn.Token.Literal }
+func (fn *FuncDeclaration) String() string {
+	var out bytes.Buffer
+	var params []string
+	for _, p := range fn.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fn.TokenLiteral())
+	out.WriteString(" " + fn.Name.String())
+	out.WriteString(": ")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(fn.Body.String())
 	return out.String()
 }
 

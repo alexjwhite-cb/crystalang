@@ -131,12 +131,20 @@ func (p *Parser) parseStatement() ast.Stmt {
 			return p.parseValueStatement()
 		}
 		exp = p.parseExpressionStatement()
+	case token.METHOD, token.DESCRIBE, token.OBJECT:
+		if p.peekTokenIs(token.IDENT) {
+			return p.parseDeclarationStatement()
+		}
 	default:
 		exp = p.parseExpressionStatement()
 	}
 	exp = p.parsePostfixExpressionStatement(exp)
 	return exp
 }
+
+//
+// This section is all about returning statements
+//
 
 func (p *Parser) parseValueStatement() *ast.ValueStmt {
 	stmt := &ast.ValueStmt{Token: p.curToken}
@@ -173,6 +181,100 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStmt {
 		p.nextToken()
 	}
 	return stmt
+}
+
+func (p *Parser) parseDeclarationStatement() ast.Stmt {
+	decl := &ast.DeclarationStmt{Token: p.curToken}
+	decl.Declaration = p.parseDeclaration()
+	return decl
+}
+
+//
+// This section is all about returning declarations and functions
+//
+
+func (p *Parser) parseDeclaration() ast.Decl {
+	ident := &ast.Ident{
+		Token: p.peekToken,
+		Value: p.peekToken.Literal,
+	}
+	switch p.curToken.Type {
+	case token.METHOD:
+		meth := p.parseFunctionDeclaration()
+		meth.Name = ident
+		return meth
+	case token.DESCRIBE:
+	case token.OBJECT:
+	}
+	return nil
+}
+
+func (p *Parser) parseFunctionDeclaration() *ast.FuncDeclaration {
+	fn := &ast.FuncDeclaration{Token: p.curToken}
+	p.nextToken()
+	if p.peekTokenIs(token.COLON) {
+		p.nextToken()
+		fn.Parameters = p.parseFunctionParameters()
+	} else {
+		fn.Parameters = nil
+	}
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	fn.Body = p.parseBlockStatement()
+	return fn
+}
+
+func (p *Parser) parseFuncLiteral() ast.Expr {
+	lit := &ast.FuncLiteral{Token: p.curToken}
+	if p.peekTokenIs(token.COLON) {
+		p.nextToken()
+		lit.Parameters = p.parseFunctionParameters()
+	} else {
+		lit.Parameters = nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	lit.Body = p.parseBlockStatement()
+	return lit
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.curToken}
+	block.Statements = []ast.Stmt{}
+	p.nextToken()
+
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
+	return block
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Ident {
+	var idents []*ast.Ident
+	if p.peekTokenIs(token.RBRACE) {
+		return nil
+	}
+	p.nextToken()
+	ident := &ast.Ident{Token: p.curToken, Value: p.curToken.Literal}
+	idents = append(idents, ident)
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		ident := &ast.Ident{Token: p.curToken, Value: p.curToken.Literal}
+		idents = append(idents, ident)
+	}
+
+	return idents
 }
 
 func (p *Parser) parseIntLiteral() ast.Expr {
@@ -414,57 +516,6 @@ func (p *Parser) parseIfExpression() ast.Expr {
 		expression.Alternative = p.parseBlockStatement()
 	}
 	return expression
-}
-
-func (p *Parser) parseFuncLiteral() ast.Expr {
-	lit := &ast.FuncLiteral{Token: p.curToken}
-	if p.peekTokenIs(token.COLON) {
-		p.nextToken()
-		lit.Parameters = p.parseFunctionParameters()
-	} else {
-		lit.Parameters = nil
-	}
-
-	if !p.expectPeek(token.LBRACE) {
-		return nil
-	}
-
-	lit.Body = p.parseBlockStatement()
-	return lit
-}
-
-func (p *Parser) parseBlockStatement() *ast.BlockStatement {
-	block := &ast.BlockStatement{Token: p.curToken}
-	block.Statements = []ast.Stmt{}
-	p.nextToken()
-
-	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
-		stmt := p.parseStatement()
-		if stmt != nil {
-			block.Statements = append(block.Statements, stmt)
-		}
-		p.nextToken()
-	}
-	return block
-}
-
-func (p *Parser) parseFunctionParameters() []*ast.Ident {
-	var idents []*ast.Ident
-	if p.peekTokenIs(token.RBRACE) {
-		return nil
-	}
-	p.nextToken()
-	ident := &ast.Ident{Token: p.curToken, Value: p.curToken.Literal}
-	idents = append(idents, ident)
-
-	for p.peekTokenIs(token.COMMA) {
-		p.nextToken()
-		p.nextToken()
-		ident := &ast.Ident{Token: p.curToken, Value: p.curToken.Literal}
-		idents = append(idents, ident)
-	}
-
-	return idents
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {
